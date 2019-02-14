@@ -1,4 +1,5 @@
 const { fenToBoard, boardToFen, squareInBoard } = require("./board");
+const { PIECE_OFFSETS } = require("./piece");
 const { boardToAscii } = require("./ascii");
 
 class Chess {
@@ -10,6 +11,14 @@ class Chess {
 
   getSquare(algebraicPosition) {
     return squareInBoard(algebraicPosition, this.board);
+  }
+
+  getSquareMoves(algebraicPosition) {
+    const square = squareInBoard(algebraicPosition, this.board);
+    const pieceOffsets = PIECE_OFFSETS[square.piece.type];
+    return pieceOffsets
+      .map(offset => squareInBoard(algebraicPosition, this.board, offset))
+      .filter(square => !!square);
   }
 
   toFen() {

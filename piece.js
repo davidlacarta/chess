@@ -36,10 +36,7 @@ function removeDuplicates(offsets) {
     const isAdded = previous.find(
       element => element[0] === current[0] && element[1] === current[1]
     );
-    if (isAdded) {
-      return previous;
-    }
-    return previous.concat([current]);
+    return isAdded ? previous : previous.concat([current]);
   }, []);
 }
 

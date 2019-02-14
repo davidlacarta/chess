@@ -75,15 +75,44 @@ function fenRowDotsToFenRow(fenRowDots) {
   }, initChar);
 }
 
-function squareInBoard(algebraicPosition, board) {
+function squareInBoard(algebraicPosition, board, offset) {
+  const arrayPosition = toArrayPosition(algebraicPosition);
+  if (offset) {
+    arrayPosition[0] += offset[0];
+    arrayPosition[1] += offset[1];
+  }
+  if (isOverflow(board, arrayPosition)) {
+    return;
+  }
+  return {
+    square: toAlgebraicPosition(arrayPosition),
+    piece: board[arrayPosition[0]][arrayPosition[1]]
+  };
+}
+
+function toArrayPosition(algebraicPosition) {
   const characters = [...algebraicPosition];
   const letter = characters[0];
   const number = characters[1];
-  const square = {
-    row: 8 - number,
-    col: "abcdefgh".indexOf(letter)
-  };
-  return board[square.row][square.col];
+  const row = 8 - number; // row reverse
+  const col = "abcdefgh".indexOf(letter);
+  return [row, col];
+}
+
+function toAlgebraicPosition(arrayPosition) {
+  const row = arrayPosition[0];
+  const col = arrayPosition[1];
+  const number = 8 - row; // row reverse
+  const letter = "abcdefgh"[col];
+  return `${letter}${number}`;
+}
+
+function isOverflow(board, arrayPosition) {
+  const row = arrayPosition[0];
+  const col = arrayPosition[1];
+  return (
+    row < 0 || row > board.length - 1 || col < 0 || col > board[row].length - 1
+  );
 }
 
 module.exports = { fenToBoard, boardToFen, squareInBoard };
