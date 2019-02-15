@@ -15,6 +15,14 @@ const PIECE_OFFSETS = {
   k: [...PIECE_OFFSETS_CROSS, ...PIECE_OFFSETS_DIAGONAL]
 };
 
+const PIECE_OFFSETS_ONE_MOVE = {
+  n: true,
+  b: false,
+  r: false,
+  q: false,
+  k: true
+};
+
 function offsetCombinations(offset) {
   const reverseRow = [offset[0] * -1, offset[1]];
   const reverseCol = [offset[0], offset[1] * -1];
@@ -40,4 +48,4 @@ function removeDuplicates(offsets) {
   }, []);
 }
 
-module.exports = { PIECE_COLOR, PIECE_OFFSETS };
+module.exports = { PIECE_COLOR, PIECE_OFFSETS, PIECE_OFFSETS_ONE_MOVE };

@@ -1,10 +1,7 @@
 const { Chess } = require("./chess");
-const { PIECE_OFFSETS } = require("./piece");
 
-const chess = new Chess();
+const chess = new Chess("rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PPP2PPP/RNB1KBNR");
 console.log(chess.toFen());
 console.log(chess.toAscii(true));
-console.log("Square b1:");
-console.log(chess.getSquare("b1"));
-console.log("Moves b1:");
-console.log(chess.getSquareMoves("b1"));
+console.log(chess.getSquare("d4"));
+console.log(chess.getSquareMoves("d4"));
