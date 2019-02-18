@@ -5,6 +5,49 @@ const { boardToAscii } = require("./ascii");
 const START_POSITION_FEN =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+function flat(array) {
+  return [].concat.apply([], array);
+}
+
+function moves(board, square, offset, oneMove) {
+  return movesRecursive(board, square, offset, oneMove, [], square.square);
+}
+
+function movesRecursive(
+  board,
+  square,
+  offset,
+  oneMove,
+  nextMoves,
+  currentSquare
+) {
+  const nextSquare = squareInBoard(currentSquare, board, offset);
+
+  const nextSquareIsEmpty = nextSquare && nextSquare.piece === null;
+  const nextSquareIsCapture =
+    nextSquare &&
+    nextSquare.piece !== null &&
+    nextSquare.piece.color !== square.piece.color;
+  const moveIsValid = nextSquareIsEmpty || nextSquareIsCapture;
+  if (moveIsValid) {
+    nextMoves.push(nextSquare);
+  }
+
+  const isLastMove = !nextSquare || nextSquare.piece !== null || oneMove;
+  if (isLastMove) {
+    return nextMoves;
+  }
+
+  return movesRecursive(
+    board,
+    square,
+    offset,
+    oneMove,
+    nextMoves,
+    nextSquare.square
+  );
+}
+
 class Chess {
   constructor(initPosition) {
     this.board = fenToBoard(initPosition || START_POSITION_FEN);
@@ -15,45 +58,12 @@ class Chess {
   }
 
   getSquareMoves(algebraicPosition) {
-    const squareBase = squareInBoard(algebraicPosition, this.board);
-    const pieceOffsets = PIECE_OFFSETS[squareBase.piece.type];
-    const oneMove = PIECE_OFFSETS_ONE_MOVE[squareBase.piece.type];
-    const movesBase = pieceOffsets
-      .map(offset => {
-        const square = squareInBoard(algebraicPosition, this.board, offset);
-        if (!square) {
-          return;
-        }
-        square["offset"] = offset;
-        return square;
-      })
-      .filter(square => !!square)
-      .filter(square => {
-        if (square.piece === null) {
-          return true;
-        }
-        return square.piece.color !== squareBase.piece.color;
-      });
-    if (oneMove) {
-      return movesBase;
-    }
-    const movesAll = [...movesBase];
-    movesBase
-      .filter(move => move.piece === null)
-      .forEach(move => {
-        const nextMove = squareInBoard(move.square, this.board, move.offset);
-        if (!nextMove) {
-          return;
-        }
-        if (
-          nextMove.piece !== null &&
-          nextMove.piece.color === squareBase.piece.color
-        ) {
-          return;
-        }
-        movesAll.push(nextMove);
-      });
-    return movesAll;
+    const square = squareInBoard(algebraicPosition, this.board);
+    const pieceOffsets = PIECE_OFFSETS[square.piece.type];
+    const oneMove = PIECE_OFFSETS_ONE_MOVE[square.piece.type];
+    return flat(
+      pieceOffsets.map(offset => moves(this.board, square, offset, oneMove))
+    );
   }
 
   toFen() {
