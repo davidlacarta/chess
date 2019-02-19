@@ -1,0 +1,28 @@
+{
+  "name": "chess",
+  "version": "1.0.0",
+  "description": "chess board logic",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src",
+    "test": "jasmine --config=jasmine.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidlacarta/chess.git"
+  },
+  "keywords": [
+    "chess",
+    "board",
+    "basic"
+  ],
+  "author": "David Lacarta",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidlacarta/chess/issues"
+  },
+  "homepage": "https://github.com/davidlacarta/chess#readme",
+  "devDependencies": {
+    "jasmine": "^3.3.1"
+  }
+}
