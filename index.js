@@ -1,4 +1,4 @@
-const { Chess } = require("./chess");
+const { Chess } = require("./src/chess");
 
 const chess = new Chess();
 console.log(chess.toAscii(true));

@@ -7,6 +7,11 @@ const PIECE_OFFSETS_CROSS = offsetCombinations([0, 1]);
 const PIECE_OFFSETS_DIAGONAL = offsetCombinations([1, 1]);
 const PIECE_OFFSETS_KNIGHT = offsetCombinations([1, 2]);
 
+const PAWN_OFFSETS = {
+  w: [[1, 0]],
+  b: [[-1, 0]]
+};
+
 const PIECE_OFFSETS = {
   n: PIECE_OFFSETS_KNIGHT,
   b: PIECE_OFFSETS_DIAGONAL,
@@ -15,12 +20,22 @@ const PIECE_OFFSETS = {
   k: [...PIECE_OFFSETS_CROSS, ...PIECE_OFFSETS_DIAGONAL]
 };
 
-const PIECE_OFFSETS_ONE_MOVE = {
-  n: true,
-  b: false,
-  r: false,
-  q: false,
-  k: true
+const PAWN_OFFSETS_NUM_MOVES = {
+  START: 2,
+  NATURAL: 1
+};
+
+const PAWN_ROW_START = {
+  w: 2,
+  b: 7
+};
+
+const PIECE_OFFSETS_NUM_MOVES = {
+  n: 1,
+  b: -1,
+  r: -1,
+  q: -1,
+  k: 1
 };
 
 function offsetCombinations(offset) {
@@ -48,4 +63,22 @@ function removeDuplicates(offsets) {
   }, []);
 }
 
-module.exports = { PIECE_COLOR, PIECE_OFFSETS, PIECE_OFFSETS_ONE_MOVE };
+function isPawn(piece) {
+  return piece && piece.type === "p";
+}
+
+function getPawnNumMovesType(square) {
+  const rowStart = PAWN_ROW_START[square.piece.color];
+  const rowSquare = Number([...square.square][1]);
+  return rowSquare === rowStart ? "START" : "NATURAL";
+}
+
+module.exports = {
+  PIECE_COLOR,
+  PIECE_OFFSETS,
+  PIECE_OFFSETS_NUM_MOVES,
+  PAWN_OFFSETS_NUM_MOVES,
+  PAWN_OFFSETS,
+  getPawnNumMovesType,
+  isPawn
+};

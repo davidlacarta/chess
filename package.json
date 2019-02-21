@@ -4,7 +4,7 @@
   "description": "chess board logic",
   "main": "index.js",
   "scripts": {
-    "start": "node src",
+    "start": "node index",
     "test": "jasmine --config=jasmine.json"
   },
   "repository": {

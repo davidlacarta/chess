@@ -2,7 +2,8 @@ const {
   fenToBoard,
   boardToFen,
   squareInBoard,
-  getSquareMoves
+  getSquareMoves,
+  moveSquare
 } = require("./board");
 const { boardToAscii } = require("./ascii");
 
@@ -20,6 +21,10 @@ class Chess {
 
   getMoves(algebraicPosition) {
     return getSquareMoves(this.board, algebraicPosition);
+  }
+
+  move(algebraicPositionFrom, algebraicPositionTo) {
+    return moveSquare(this.board, algebraicPositionFrom, algebraicPositionTo);
   }
 
   toFen() {
