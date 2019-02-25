@@ -2,9 +2,7 @@ const {
   PIECE_COLOR,
   PIECE_OFFSETS,
   PIECE_OFFSETS_NUM_MOVES,
-  PAWN_OFFSETS_NUM_MOVES,
   PAWN_OFFSETS,
-  getPawnNumMovesType,
   isPawn
 } = require("./piece");
 
@@ -24,7 +22,7 @@ function flat(array) {
  */
 function fenToBoard(fenPosition) {
   const fenRows = fenPosition.split(" ")[0].split("/");
-  return fenRows.map(fenRow => fenRowToArray(fenRow));
+  return fenRows.reverse().map(fenRow => fenRowToArray(fenRow));
 }
 
 function fenRowToArray(fenRow) {
@@ -34,7 +32,7 @@ function fenRowToArray(fenRow) {
         ? fenCharacterToPiece(fenCharacter)
         : Array(Number(fenCharacter))
             .fill()
-            .map((_, i) => null)
+            .map(() => null)
     )
   );
 }
@@ -51,6 +49,7 @@ function fenCharacterToPiece(fenCharacter) {
 function boardToFen(board) {
   const rowSeparator = "/";
   return [...board]
+    .reverse()
     .map(row => row.map(piece => pieceToFenDot(piece)))
     .map(fenRowDots => fenRowDotsToFenRow(fenRowDots))
     .join(rowSeparator);
@@ -86,7 +85,7 @@ function fenRowDotsToFenRow(fenRowDots) {
 function squareInBoard(board, algebraicPosition, offset) {
   const arrayPosition = toArrayPosition(algebraicPosition);
   if (offset) {
-    arrayPosition[0] -= offset[0];
+    arrayPosition[0] += offset[0];
     arrayPosition[1] += offset[1];
   }
   if (isOverflow(board, arrayPosition)) {
@@ -102,7 +101,7 @@ function toArrayPosition(algebraicPosition) {
   const characters = [...algebraicPosition];
   const letter = characters[0];
   const number = characters[1];
-  const row = 8 - number; // row reverse
+  const row = "12345678".indexOf(number);
   const col = "abcdefgh".indexOf(letter);
   return [row, col];
 }
@@ -110,8 +109,8 @@ function toArrayPosition(algebraicPosition) {
 function toAlgebraicPosition(arrayPosition) {
   const row = arrayPosition[0];
   const col = arrayPosition[1];
-  const number = 8 - row; // row reverse
   const letter = "abcdefgh"[col];
+  const number = "12345678"[row];
   return `${letter}${number}`;
 }
 
@@ -132,11 +131,20 @@ function getSquareMoves(board, algebraicPosition) {
     ? PAWN_OFFSETS[square.piece.color]
     : PIECE_OFFSETS[square.piece.type];
   const numMoves = isPawn(square.piece)
-    ? PAWN_OFFSETS_NUM_MOVES[getPawnNumMovesType(square)]
+    ? getPawnNumMoves(square)
     : PIECE_OFFSETS_NUM_MOVES[square.piece.type];
   return flat(
     pieceOffsets.map(offset => moves(board, square, offset, numMoves))
   );
+}
+
+function getPawnNumMoves(square) {
+  const pieceColor = square.piece.color;
+  const rowSquare = Number(square.square[1]);
+  const isPawnStartPosition =
+    (rowSquare === 2 && PIECE_COLOR.WHITE === pieceColor) ||
+    (rowSquare === 7 && PIECE_COLOR.BLACK === pieceColor);
+  return isPawnStartPosition ? 2 : 1;
 }
 
 function moves(board, square, offset, numMoves) {
@@ -155,7 +163,7 @@ function movesRecursive(
   if (moveIsValid(square, nextSquare)) {
     nextMoves.push(nextSquare);
   }
-  return moveIsLast(nextMoves, nextSquare, numMoves)
+  return moveIsLast(square, nextMoves, nextSquare, numMoves)
     ? nextMoves
     : movesRecursive(
         board,
@@ -173,14 +181,35 @@ function moveIsValid(square, nextSquare) {
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
   return isPawn(square.piece)
-    ? nextSquare && !nextSquareIsPlaced
+    ? movePawnIsValid(square, nextSquare)
     : nextSquareIsEmpty || nextPieceIsCapture;
 }
 
-function moveIsLast(nextMoves, nextSquare, numMoves) {
+function movePawnIsValid(square, nextSquare) {
+  const isMoveCapture = isPawnMoveCapture(square, nextSquare);
+  const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
+  const nextPieceIsCapture =
+    nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
+  return (
+    (nextSquare && !isMoveCapture && !nextSquareIsPlaced) ||
+    (nextSquare && isMoveCapture && nextPieceIsCapture)
+  );
+}
+
+function moveIsLast(square, nextMoves, nextSquare, numMoves) {
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const numMovesCompleted = numMoves !== -1 && nextMoves.length === numMoves;
-  return !nextSquare || nextSquareIsPlaced || numMovesCompleted;
+  return (
+    !nextSquare ||
+    nextSquareIsPlaced ||
+    numMovesCompleted ||
+    (isPawn(square.piece) && isPawnMoveCapture(square, nextSquare))
+  );
+}
+
+function isPawnMoveCapture(square, nextSquare) {
+  const sameColumn = nextSquare && square.square[0] === nextSquare.square[0];
+  return !sameColumn;
 }
 
 function moveSquare(board, algebraicPositionFrom, algebraicPositionTo) {

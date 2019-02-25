@@ -126,5 +126,29 @@ const MOVEMENTS = [
     FEN: "r1bqkbnr/ppp2ppp/n7/3pp3/2PQP3/8/PP3PPP/RNB1KBNR",
     SQUARE: "a7",
     MOVES: []
+  },
+  {
+    TITLE: "PAWN WHITE CAPTURE",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR",
+    SQUARE: "e4",
+    MOVES: [{ square: "d5", piece: { type: "p", color: "b" } }]
+  },
+  {
+    TITLE: "PAWN WHITE CAPTURE AND ADVANCE",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR",
+    SQUARE: "c4",
+    MOVES: [
+      { square: "d5", piece: { type: "p", color: "b" } },
+      { square: "c5", piece: null }
+    ]
+  },
+  {
+    TITLE: "PAWN BLACK CAPTURE AND CAPTURE",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR",
+    SQUARE: "d5",
+    MOVES: [
+      { square: "c4", piece: { type: "p", color: "w" } },
+      { square: "e4", piece: { type: "p", color: "w" } }
+    ]
   }
 ];

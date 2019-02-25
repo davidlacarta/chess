@@ -19,6 +19,7 @@ function boardToAscii(board, showAlgebraic) {
   const colSeparator = " ";
   const rowSeparator = "\n";
   return [...board]
+    .reverse()
     .map(row => row.map(piece => pieceToAscii(piece)))
     .map((row, i, rows) =>
       showAlgebraic
