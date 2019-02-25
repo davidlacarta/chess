@@ -16,15 +16,22 @@ class Chess {
   }
 
   getSquare(algebraicPosition) {
-    return squareInBoard(this.board, algebraicPosition);
+    return squareInBoard({ board: this.board, algebraicPosition });
   }
 
   getMoves(algebraicPosition) {
-    return getSquareMoves(this.board, algebraicPosition);
+    return getSquareMoves({
+      board: this.board,
+      algebraicPosition: algebraicPosition
+    });
   }
 
   move(algebraicPositionFrom, algebraicPositionTo) {
-    return moveSquare(this.board, algebraicPositionFrom, algebraicPositionTo);
+    return moveSquare({
+      board: this.board,
+      algebraicPositionFrom,
+      algebraicPositionTo
+    });
   }
 
   toFen() {

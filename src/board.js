@@ -82,13 +82,13 @@ function fenRowDotsToFenRow(fenRowDots) {
   }, initChar);
 }
 
-function squareInBoard(board, algebraicPosition, offset) {
+function squareInBoard({ board, algebraicPosition, offset }) {
   const arrayPosition = toArrayPosition(algebraicPosition);
   if (offset) {
     arrayPosition[0] += offset[0];
     arrayPosition[1] += offset[1];
   }
-  if (isOverflow(board, arrayPosition)) {
+  if (isOverflow({ board, arrayPosition })) {
     return;
   }
   return {
@@ -114,7 +114,7 @@ function toAlgebraicPosition(arrayPosition) {
   return `${letter}${number}`;
 }
 
-function isOverflow(board, arrayPosition) {
+function isOverflow({ board, arrayPosition }) {
   const row = arrayPosition[0];
   const col = arrayPosition[1];
   return (
@@ -122,8 +122,8 @@ function isOverflow(board, arrayPosition) {
   );
 }
 
-function getSquareMoves(board, algebraicPosition) {
-  const square = squareInBoard(board, algebraicPosition);
+function getSquareMoves({ board, algebraicPosition }) {
+  const square = squareInBoard({ board, algebraicPosition });
   if (!square || square.piece === null) {
     return [];
   }
@@ -134,7 +134,7 @@ function getSquareMoves(board, algebraicPosition) {
     ? getPawnNumMoves(square)
     : PIECE_OFFSETS_NUM_MOVES[square.piece.type];
   return flat(
-    pieceOffsets.map(offset => moves(board, square, offset, numMoves))
+    pieceOffsets.map(offset => moves({ board, square, offset, numMoves }))
   );
 }
 
@@ -147,46 +147,57 @@ function getPawnNumMoves(square) {
   return isPawnStartPosition ? 2 : 1;
 }
 
-function moves(board, square, offset, numMoves) {
-  return movesRecursive(board, square, offset, numMoves, [], square.square);
+function moves({ board, square, offset, numMoves }) {
+  return movesRecursive({
+    board,
+    square,
+    offset,
+    numMoves,
+    nextMoves: [],
+    currentSquare: square.square
+  });
 }
 
-function movesRecursive(
+function movesRecursive({
   board,
   square,
   offset,
   numMoves,
   nextMoves,
   currentSquare
-) {
-  const nextSquare = squareInBoard(board, currentSquare, offset);
-  if (moveIsValid(square, nextSquare)) {
+}) {
+  const nextSquare = squareInBoard({
+    board,
+    algebraicPosition: currentSquare,
+    offset
+  });
+  if (moveIsValid({ square, nextSquare })) {
     nextMoves.push(nextSquare);
   }
-  return moveIsLast(square, nextMoves, nextSquare, numMoves)
+  return moveIsLast({ square, nextMoves, nextSquare, numMoves })
     ? nextMoves
-    : movesRecursive(
+    : movesRecursive({
         board,
         square,
         offset,
         numMoves,
         nextMoves,
-        nextSquare.square
-      );
+        currentSquare: nextSquare.square
+      });
 }
 
-function moveIsValid(square, nextSquare) {
+function moveIsValid({ square, nextSquare }) {
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const nextSquareIsEmpty = nextSquare && nextSquare.piece === null;
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
   return isPawn(square.piece)
-    ? movePawnIsValid(square, nextSquare)
+    ? movePawnIsValid({ square, nextSquare })
     : nextSquareIsEmpty || nextPieceIsCapture;
 }
 
-function movePawnIsValid(square, nextSquare) {
-  const isMoveCapture = isPawnMoveCapture(square, nextSquare);
+function movePawnIsValid({ square, nextSquare }) {
+  const isMoveCapture = isPawnMoveCapture({ square, nextSquare });
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
@@ -196,24 +207,24 @@ function movePawnIsValid(square, nextSquare) {
   );
 }
 
-function moveIsLast(square, nextMoves, nextSquare, numMoves) {
+function moveIsLast({ square, nextMoves, nextSquare, numMoves }) {
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const numMovesCompleted = numMoves !== -1 && nextMoves.length === numMoves;
   return (
     !nextSquare ||
     nextSquareIsPlaced ||
     numMovesCompleted ||
-    (isPawn(square.piece) && isPawnMoveCapture(square, nextSquare))
+    (isPawn(square.piece) && isPawnMoveCapture({ square, nextSquare }))
   );
 }
 
-function isPawnMoveCapture(square, nextSquare) {
+function isPawnMoveCapture({ square, nextSquare }) {
   const sameColumn = nextSquare && square.square[0] === nextSquare.square[0];
   return !sameColumn;
 }
 
-function moveSquare(board, algebraicPositionFrom, algebraicPositionTo) {
-  const moves = getSquareMoves(board, algebraicPositionFrom);
+function moveSquare({ board, algebraicPositionFrom, algebraicPositionTo }) {
+  const moves = getSquareMoves({ board, algebraicPositionFrom });
   if (!moves.find(move => move.square === algebraicPositionTo)) {
     throw "move invalid";
   }
