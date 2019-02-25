@@ -13,15 +13,26 @@ function flat(array) {
   return [].concat.apply([], array);
 }
 
-/**
- * Forsyth–Edwards Notation (FEN) is a standard notation for describing a particular board position of a chess game
- * https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
- *
- * Here is the FEN for the starting position:
- * rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
- */
-function fenToBoard(fenPosition) {
-  const fenRows = fenPosition.split(" ")[0].split("/");
+function fenToState(fenState) {
+  const fenStateRecords = fenState.split(" ");
+  const piecesPlacement = fenStateRecords[0];
+  const activeColour = fenStateRecords[1];
+  const castlingAvailability = fenStateRecords[2];
+  const passantTarget = fenStateRecords[3];
+  const halfMoveClock = Number(fenStateRecords[4]);
+  const fullMoveNumber = Number(fenStateRecords[5]);
+  return {
+    board: fenPiecesPlacementToBoard(piecesPlacement),
+    activeColour,
+    castlingAvailability,
+    passantTarget,
+    halfMoveClock,
+    fullMoveNumber
+  };
+}
+
+function fenPiecesPlacementToBoard(piecesPlacement) {
+  const fenRows = piecesPlacement.split("/");
   return fenRows.reverse().map(fenRow => fenRowToArray(fenRow));
 }
 
@@ -44,6 +55,17 @@ function fenCharacterToPiece(fenCharacter) {
       ? PIECE_COLOR.WHITE
       : PIECE_COLOR.BLACK
   };
+}
+
+function stateToFen(state) {
+  return [
+    boardToFen(state.board),
+    state.activeColour,
+    state.castlingAvailability,
+    state.passantTarget,
+    state.halfMoveClock.toString(),
+    state.fullMoveNumber.toString()
+  ].join(" ");
 }
 
 function boardToFen(board) {
@@ -122,7 +144,8 @@ function isOverflow({ board, arrayPosition }) {
   );
 }
 
-function getSquareMoves({ board, algebraicPosition }) {
+function getSquareMoves({ state, algebraicPosition }) {
+  const { board } = state;
   const square = squareInBoard({ board, algebraicPosition });
   if (!square || square.piece === null) {
     return [];
@@ -134,7 +157,7 @@ function getSquareMoves({ board, algebraicPosition }) {
     ? getPawnNumMoves(square)
     : PIECE_OFFSETS_NUM_MOVES[square.piece.type];
   return flat(
-    pieceOffsets.map(offset => moves({ board, square, offset, numMoves }))
+    pieceOffsets.map(offset => moves({ state, square, offset, numMoves }))
   );
 }
 
@@ -147,9 +170,9 @@ function getPawnNumMoves(square) {
   return isPawnStartPosition ? 2 : 1;
 }
 
-function moves({ board, square, offset, numMoves }) {
+function moves({ state, square, offset, numMoves }) {
   return movesRecursive({
-    board,
+    state,
     square,
     offset,
     numMoves,
@@ -159,25 +182,26 @@ function moves({ board, square, offset, numMoves }) {
 }
 
 function movesRecursive({
-  board,
+  state,
   square,
   offset,
   numMoves,
   nextMoves,
   currentSquare
 }) {
+  const { board, passantTarget } = state;
   const nextSquare = squareInBoard({
     board,
     algebraicPosition: currentSquare,
     offset
   });
-  if (moveIsValid({ square, nextSquare })) {
+  if (moveIsValid({ square, nextSquare, passantTarget })) {
     nextMoves.push(nextSquare);
   }
   return moveIsLast({ square, nextMoves, nextSquare, numMoves })
     ? nextMoves
     : movesRecursive({
-        board,
+        state,
         square,
         offset,
         numMoves,
@@ -186,24 +210,26 @@ function movesRecursive({
       });
 }
 
-function moveIsValid({ square, nextSquare }) {
+function moveIsValid({ square, nextSquare, passantTarget }) {
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const nextSquareIsEmpty = nextSquare && nextSquare.piece === null;
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
   return isPawn(square.piece)
-    ? movePawnIsValid({ square, nextSquare })
+    ? movePawnIsValid({ square, nextSquare, passantTarget })
     : nextSquareIsEmpty || nextPieceIsCapture;
 }
 
-function movePawnIsValid({ square, nextSquare }) {
+function movePawnIsValid({ square, nextSquare, passantTarget }) {
+  const nextSquareIsPassant = nextSquare && nextSquare.square === passantTarget;
   const isMoveCapture = isPawnMoveCapture({ square, nextSquare });
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
   return (
     (nextSquare && !isMoveCapture && !nextSquareIsPlaced) ||
-    (nextSquare && isMoveCapture && nextPieceIsCapture)
+    (nextSquare && isMoveCapture && nextPieceIsCapture) ||
+    nextSquareIsPassant
   );
 }
 
@@ -223,8 +249,12 @@ function isPawnMoveCapture({ square, nextSquare }) {
   return !sameColumn;
 }
 
-function moveSquare({ board, algebraicPositionFrom, algebraicPositionTo }) {
-  const moves = getSquareMoves({ board, algebraicPositionFrom });
+function moveSquare({ state, algebraicPositionFrom, algebraicPositionTo }) {
+  const { board, passantTarget } = state;
+  const moves = getSquareMoves({
+    state,
+    algebraicPosition: algebraicPositionFrom
+  });
   if (!moves.find(move => move.square === algebraicPositionTo)) {
     throw "move invalid";
   }
@@ -237,12 +267,21 @@ function moveSquare({ board, algebraicPositionFrom, algebraicPositionTo }) {
   board[arrayPositionFrom[0]][arrayPositionFrom[1]] = null;
   board[arrayPositionTo[0]][arrayPositionTo[1]] = squareFrom;
 
+  const squareToIsPassant = algebraicPositionTo === passantTarget;
+  if (isPawn(squareFrom) && squareToIsPassant) {
+    const offset = squareFrom.color === PIECE_COLOR.WHITE ? -1 : 1;
+    const squareCaptured =
+      board[arrayPositionTo[0] + offset][arrayPositionTo[1]];
+    board[arrayPositionTo[0] + offset][arrayPositionTo[1]] = null;
+    return squareCaptured;
+  }
+
   return squareTo;
 }
 
 module.exports = {
-  fenToBoard,
-  boardToFen,
+  fenToState,
+  stateToFen,
   squareInBoard,
   getSquareMoves,
   moveSquare
