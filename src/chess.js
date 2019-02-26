@@ -1,10 +1,5 @@
-const {
-  fenToState,
-  stateToFen,
-  squareInBoard,
-  getSquareMoves,
-  moveSquare
-} = require("./board");
+const { fenToState, stateToFen, squareInBoard } = require("./board");
+const { getSquareMoves, moveSquare } = require("./movement");
 const { boardToAscii } = require("./ascii");
 
 const FEN_START_POSITION =
