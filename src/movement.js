@@ -3,6 +3,8 @@ const {
   PIECE_OFFSETS,
   PIECE_OFFSETS_NUM_MOVES,
   PAWN_OFFSETS,
+  CASTLING,
+  CASTLING_SAFE,
   isPawn
 } = require("./piece");
 const {
@@ -331,9 +333,69 @@ function squaresActiveColor(state) {
   );
 }
 
+function castling({ state, castlingType }) {
+  const {
+    king: { from: kingFrom, to: kingTo },
+    rook: { from: rookFrom, to: rookTo }
+  } = CASTLING[castlingType];
+  const { board, activeColour } = state;
+  const castlingRow = PIECE_COLOR.WHITE === activeColour ? "1" : "8";
+  const squaresSafes = CASTLING_SAFE[castlingType].map(square =>
+    square.concat(castlingRow)
+  );
+  if (
+    !!squaresSafes.find(
+      algebraicPosition =>
+        !isEmptySquare({ board, algebraicPosition }) &&
+        !isKingSquare({ board, algebraicPosition })
+    )
+  ) {
+    throw "castling invalid";
+  }
+  if (!!squaresSafes.find(squareSafe => isTarget({ state, squareSafe }))) {
+    throw "castling target";
+  }
+  moveSquareBoard({
+    board,
+    boardPositionFrom: toArrayPosition(kingFrom.concat(castlingRow)),
+    boardPositionTo: toArrayPosition(kingTo.concat(castlingRow))
+  });
+  moveSquareBoard({
+    board,
+    boardPositionFrom: toArrayPosition(rookFrom.concat(castlingRow)),
+    boardPositionTo: toArrayPosition(rookTo.concat(castlingRow))
+  });
+
+  state.passantTarget = "-";
+  state.halfMoveClock += 1;
+  updateCastling({ state, castlingType });
+  updateFullMoveNumber(state);
+  changeActiveColor(state);
+}
+
+function updateCastling({ state, castlingType }) {
+  const castlingKey =
+    state.activeColour === PIECE_COLOR.WHITE
+      ? castlingType.toUpperCase()
+      : castlingType;
+  const castlingNew = state.castlingAvailability.replace(castlingKey, "");
+  state.castlingAvailability = castlingNew || "-";
+}
+
+function isEmptySquare({ board, algebraicPosition }) {
+  const square = squareInBoard({ board, algebraicPosition });
+  return square.piece === null;
+}
+
+function isKingSquare({ board, algebraicPosition }) {
+  const square = squareInBoard({ board, algebraicPosition });
+  return square.piece !== null && square.piece.type === "k";
+}
+
 module.exports = {
   getSquareMoves,
   moveSquare,
   isTarget,
-  isTargetKing
+  isTargetKing,
+  castling
 };

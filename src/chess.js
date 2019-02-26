@@ -3,8 +3,10 @@ const {
   getSquareMoves,
   moveSquare,
   isTarget,
-  isTargetKing
+  isTargetKing,
+  castling
 } = require("./movement");
+const { CASTLING_TYPE } = require("./piece");
 const { boardToAscii } = require("./ascii");
 
 const FEN_START_POSITION =
@@ -24,6 +26,14 @@ class Chess {
       state: this.state,
       algebraicPosition
     });
+  }
+
+  castlingKing() {
+    castling({ state: this.state, castlingType: CASTLING_TYPE.KING });
+  }
+
+  castlingQueen() {
+    castling({ state: this.state, castlingType: CASTLING_TYPE.QUEEN });
   }
 
   target(algebraicPosition) {

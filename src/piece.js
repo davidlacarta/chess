@@ -28,6 +28,21 @@ const PIECE_OFFSETS_NUM_MOVES = {
   k: 1
 };
 
+const CASTLING_TYPE = {
+  KING: "k",
+  QUEEN: "q"
+};
+
+const CASTLING = {
+  k: { king: { from: "e", to: "g" }, rook: { from: "h", to: "f" } },
+  q: { king: { from: "e", to: "c" }, rook: { from: "a", to: "d" } }
+};
+
+const CASTLING_SAFE = {
+  k: ["e", "f", "g"],
+  q: ["b", "c", "d", "e"]
+};
+
 function offsetCombinations(offset) {
   const reverseRow = [offset[0] * -1, offset[1]];
   const reverseCol = [offset[0], offset[1] * -1];
@@ -62,5 +77,8 @@ module.exports = {
   PIECE_OFFSETS,
   PIECE_OFFSETS_NUM_MOVES,
   PAWN_OFFSETS,
+  CASTLING,
+  CASTLING_TYPE,
+  CASTLING_SAFE,
   isPawn
 };
