@@ -22,7 +22,10 @@ describe("Chess", function() {
 
 function testMove(chess, movement) {
   const result = chess.move(movement.SQUARE_FROM, movement.SQUARE_TO);
-  expect(pieceIsEqual(result, movement.RESULT)).toBeTruthy(
+  const fenResult = chess.toFen();
+  const isEqual =
+    pieceIsEqual(result, movement.RESULT) && movement.RESULT_FEN === fenResult;
+  expect(isEqual).toBeTruthy(
     [
       "",
       `${chess.toAscii(true)}`,
@@ -32,6 +35,8 @@ function testMove(chess, movement) {
       `expected: ${JSON.stringify(movement.RESULT)}, current: ${JSON.stringify(
         result
       )}`,
+      `FEN expect: ${movement.RESULT_FEN}`,
+      `FEN result: ${fenResult}`,
       ""
     ].join("\n")
   );
@@ -159,19 +164,19 @@ const MOVEMENTS = [
   },
   {
     TITLE: "PAWN BLACK INIT",
-    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 0 1",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
     SQUARE: "a7",
     MOVES: [{ square: "a6", piece: null }, { square: "a5", piece: null }]
   },
   {
     TITLE: "PAWN BLACK ONE MOVE",
-    FEN: "rnbqkbnr/1pp2ppp/p7/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 0 1",
+    FEN: "rnbqkbnr/1pp2ppp/p7/3pp3/2PQP3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
     SQUARE: "a6",
     MOVES: [{ square: "a5", piece: null }]
   },
   {
     TITLE: "PAWN BLACK INIT BLOCK",
-    FEN: "r1bqkbnr/ppp2ppp/n7/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 0 1",
+    FEN: "r1bqkbnr/ppp2ppp/n7/3pp3/2PQP3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
     SQUARE: "a7",
     MOVES: []
   },
@@ -192,7 +197,7 @@ const MOVEMENTS = [
   },
   {
     TITLE: "PAWN BLACK CAPTURE AND CAPTURE",
-    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 0 1",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
     SQUARE: "d5",
     MOVES: [
       { square: "c4", piece: { type: "p", color: "w" } },
@@ -213,7 +218,32 @@ const MOVEMENTS_MOVE = [
     FEN: "rnbqkbnr/ppp2ppp/8/2Ppp3/3QP3/8/PP3PPP/RNB1KBNR w KQkq d6 0 1",
     SQUARE_FROM: "c5",
     SQUARE_TO: "d6",
-    RESULT: { type: "p", color: "b" }
+    RESULT: { type: "p", color: "b" },
+    RESULT_FEN: "rnbqkbnr/ppp2ppp/3P4/4p3/3QP3/8/PP3PPP/RNB1KBNR b KQkq - 0 1"
+  },
+  {
+    TITLE: "PAWN WHITE ADVANCE",
+    FEN: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    SQUARE_FROM: "e2",
+    SQUARE_TO: "e4",
+    RESULT: null,
+    RESULT_FEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+  },
+  {
+    TITLE: "QUEN WHITE MOVE",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 0 1",
+    SQUARE_FROM: "d4",
+    SQUARE_TO: "d3",
+    RESULT: null,
+    RESULT_FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2P1P3/3Q4/PP3PPP/RNB1KBNR b KQkq - 1 1"
+  },
+  {
+    TITLE: "QUEN BLACK MOVE",
+    FEN: "rnbqkbnr/ppp2ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
+    SQUARE_FROM: "d8",
+    SQUARE_TO: "d7",
+    RESULT: null,
+    RESULT_FEN: "rnb1kbnr/pppq1ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 1 2"
   }
 ];
 

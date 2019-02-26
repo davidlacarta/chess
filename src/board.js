@@ -147,7 +147,11 @@ function isOverflow({ board, arrayPosition }) {
 function getSquareMoves({ state, algebraicPosition }) {
   const { board } = state;
   const square = squareInBoard({ board, algebraicPosition });
-  if (!square || square.piece === null) {
+  if (
+    !square ||
+    square.piece === null ||
+    square.piece.color !== state.activeColour
+  ) {
     return [];
   }
   const pieceOffsets = isPawn(square.piece)
@@ -250,33 +254,123 @@ function isPawnMoveCapture({ square, nextSquare }) {
 }
 
 function moveSquare({ state, algebraicPositionFrom, algebraicPositionTo }) {
+  if (
+    !moveSquareIsValid({ state, algebraicPositionFrom, algebraicPositionTo })
+  ) {
+    throw "move invalid";
+  }
   const { board, passantTarget } = state;
+  const boardPositionFrom = toArrayPosition(algebraicPositionFrom);
+  const boardPositionTo = toArrayPosition(algebraicPositionTo);
+
+  const { squareFrom, squareTo } = moveSquareBoard({
+    board,
+    boardPositionFrom,
+    boardPositionTo
+  });
+
+  const squareTarget =
+    isPawn(squareFrom) && algebraicPositionTo === passantTarget
+      ? cleanSquareBoardPassant({ state, squareFrom, boardPositionTo })
+      : squareTo;
+
+  updatePassantTarget({
+    state,
+    squareFrom,
+    boardPositionFrom,
+    boardPositionTo
+  });
+  updateHalfMoveClock({ state, squareFrom, squareTarget });
+  updateFullMoveNumber(state);
+  changeActiveColor(state);
+
+  return squareTarget;
+}
+
+function updateHalfMoveClock({ state, squareFrom, squareTarget }) {
+  const isCapture = squareTarget !== null;
+  state.halfMoveClock =
+    isPawn(squareFrom) || isCapture ? 0 : state.halfMoveClock + 1;
+}
+
+function updateFullMoveNumber(state) {
+  if (state.activeColour === PIECE_COLOR.BLACK) {
+    state.fullMoveNumber += 1;
+  }
+}
+
+function updatePassantTarget({
+  state,
+  squareFrom,
+  boardPositionFrom,
+  boardPositionTo
+}) {
+  const moveTwoRows = Math.abs(boardPositionFrom[0] - boardPositionTo[0]) === 2;
+  if (!isPawn(squareFrom) || !moveTwoRows) {
+    state.passantTarget = "-";
+    return;
+  }
+
+  const boardPositionPassant = getBoardPositionPassant({
+    color: squareFrom.color,
+    boardPosition: boardPositionTo
+  });
+
+  state.passantTarget = toAlgebraicPosition(boardPositionPassant);
+}
+
+function cleanSquareBoardPassant({ state, squareFrom, boardPositionTo }) {
+  const { board } = state;
+  const boardPositionPassant = getBoardPositionPassant({
+    color: squareFrom.color,
+    boardPosition: boardPositionTo
+  });
+  return cleanSquareBoard({
+    board,
+    boardPosition: boardPositionPassant
+  });
+}
+
+function changeActiveColor(state) {
+  state.activeColour =
+    state.activeColour === PIECE_COLOR.WHITE
+      ? PIECE_COLOR.BLACK
+      : PIECE_COLOR.WHITE;
+}
+
+function getBoardPositionPassant({ color, boardPosition }) {
+  const offset = color === PIECE_COLOR.WHITE ? -1 : 1;
+  const boardPositionPassant = boardPosition;
+  boardPositionPassant[0] += offset;
+  return boardPositionPassant;
+}
+
+function moveSquareIsValid({
+  state,
+  algebraicPositionFrom,
+  algebraicPositionTo
+}) {
   const moves = getSquareMoves({
     state,
     algebraicPosition: algebraicPositionFrom
   });
-  if (!moves.find(move => move.square === algebraicPositionTo)) {
-    throw "move invalid";
-  }
-  const arrayPositionFrom = toArrayPosition(algebraicPositionFrom);
-  const arrayPositionTo = toArrayPosition(algebraicPositionTo);
+  return moves.find(move => move.square === algebraicPositionTo);
+}
 
-  const squareFrom = board[arrayPositionFrom[0]][arrayPositionFrom[1]];
-  const squareTo = board[arrayPositionTo[0]][arrayPositionTo[1]];
+function moveSquareBoard({ board, boardPositionFrom, boardPositionTo }) {
+  const squareFrom = board[boardPositionFrom[0]][boardPositionFrom[1]];
+  const squareTo = board[boardPositionTo[0]][boardPositionTo[1]];
 
-  board[arrayPositionFrom[0]][arrayPositionFrom[1]] = null;
-  board[arrayPositionTo[0]][arrayPositionTo[1]] = squareFrom;
+  board[boardPositionTo[0]][boardPositionTo[1]] = squareFrom;
+  board[boardPositionFrom[0]][boardPositionFrom[1]] = null;
 
-  const squareToIsPassant = algebraicPositionTo === passantTarget;
-  if (isPawn(squareFrom) && squareToIsPassant) {
-    const offset = squareFrom.color === PIECE_COLOR.WHITE ? -1 : 1;
-    const squareCaptured =
-      board[arrayPositionTo[0] + offset][arrayPositionTo[1]];
-    board[arrayPositionTo[0] + offset][arrayPositionTo[1]] = null;
-    return squareCaptured;
-  }
+  return { squareFrom, squareTo };
+}
 
-  return squareTo;
+function cleanSquareBoard({ board, boardPosition }) {
+  const squareCaptured = board[boardPosition[0]][boardPosition[1]];
+  board[boardPosition[0]][boardPosition[1]] = null;
+  return squareCaptured;
 }
 
 module.exports = {
