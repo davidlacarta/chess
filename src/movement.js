@@ -122,6 +122,24 @@ function isPawnMoveCapture({ square, nextSquare }) {
 }
 
 function moveSquare({ state, algebraicPositionFrom, algebraicPositionTo }) {
+  const virtualState = state;
+  const squareTarget = moveSquareVirtual({
+    state: virtualState,
+    algebraicPositionFrom,
+    algebraicPositionTo
+  });
+  if (isTargetKing(virtualState)) {
+    throw "target king";
+  }
+  state = virtualState;
+  return squareTarget;
+}
+
+function moveSquareVirtual({
+  state,
+  algebraicPositionFrom,
+  algebraicPositionTo
+}) {
   if (
     !moveSquareIsValid({ state, algebraicPositionFrom, algebraicPositionTo })
   ) {
@@ -241,7 +259,81 @@ function cleanSquareBoard({ board, boardPosition }) {
   return squareCaptured;
 }
 
+function isTargetKing(state) {
+  const { board, activeColour } = state;
+  const noActiveColour =
+    PIECE_COLOR.WHITE === activeColour ? PIECE_COLOR.BLACK : PIECE_COLOR.WHITE;
+  const squareKing = getSquareKing({
+    board,
+    color: noActiveColour
+  });
+  return isTarget({ state, algebraicPosition: squareKing.square });
+}
+
+function getSquareKing({ board, color }) {
+  return board
+    .map((row, rowIndex) =>
+      row
+        .map((piece, colIndex) => ({
+          piece,
+          square: toAlgebraicPosition([rowIndex, colIndex])
+        }))
+        .find(
+          piece =>
+            piece.piece != null &&
+            piece.piece.color === color &&
+            piece.piece.type === "k"
+        )
+    )
+    .filter(square => !!square)[0];
+}
+
+function isTarget({ state, algebraicPosition }) {
+  return !!getSquareMovesActiveColor(state).find(
+    square => square.square === algebraicPosition
+  );
+}
+
+function getSquareMovesActiveColor(state) {
+  return removeDuplicates(
+    flat(
+      squaresActiveColor(state).map(algebraicPosition => {
+        const moves = getSquareMoves({ state, algebraicPosition });
+        return moves;
+      })
+    )
+  );
+}
+
+function removeDuplicates(squares) {
+  return squares.reduce((accum, current) => {
+    const isAdded = accum.find(
+      accumElement => accumElement.square === current.square
+    );
+    return isAdded ? accum : accum.concat([current]);
+  }, []);
+}
+
+function squaresActiveColor(state) {
+  const { board, activeColour } = state;
+  return flat(
+    board.map((row, rowIndex) =>
+      row
+        .map((piece, colIndex) => ({
+          piece,
+          square: toAlgebraicPosition([rowIndex, colIndex])
+        }))
+        .filter(
+          piece => piece.piece !== null && piece.piece.color === activeColour
+        )
+        .map(piece => piece.square)
+    )
+  );
+}
+
 module.exports = {
   getSquareMoves,
-  moveSquare
+  moveSquare,
+  isTarget,
+  isTargetKing
 };

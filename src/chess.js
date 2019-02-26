@@ -1,5 +1,10 @@
 const { fenToState, stateToFen, squareInBoard } = require("./board");
-const { getSquareMoves, moveSquare } = require("./movement");
+const {
+  getSquareMoves,
+  moveSquare,
+  isTarget,
+  isTargetKing
+} = require("./movement");
 const { boardToAscii } = require("./ascii");
 
 const FEN_START_POSITION =
@@ -19,6 +24,14 @@ class Chess {
       state: this.state,
       algebraicPosition
     });
+  }
+
+  target(algebraicPosition) {
+    return isTarget({ state: this.state, algebraicPosition });
+  }
+
+  targetKing() {
+    return isTargetKing(this.state);
   }
 
   move(algebraicPositionFrom, algebraicPositionTo) {

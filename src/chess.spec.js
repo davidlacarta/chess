@@ -15,7 +15,19 @@ describe("Chess", function() {
 
   it("should throw exception", function() {
     MOVEMENTS_MOVE_INVALID.forEach(movement => {
-      testMoveInvalid(new Chess(movement.FEN), movement);
+      const chess = new Chess(movement.FEN);
+      expect(() =>
+        chess.move(movement.SQUARE_FROM, movement.SQUARE_TO)
+      ).toThrow("move invalid");
+    });
+  });
+
+  it("should throw exception king", function() {
+    MOVEMENTS_TARGET_KING.forEach(movement => {
+      const chess = new Chess(movement.FEN);
+      expect(() =>
+        chess.move(movement.SQUARE_FROM, movement.SQUARE_TO)
+      ).toThrow("target king");
     });
   });
 });
@@ -39,12 +51,6 @@ function testMove(chess, movement) {
       `FEN result: ${fenResult}`,
       ""
     ].join("\n")
-  );
-}
-
-function testMoveInvalid(chess, movement) {
-  expect(() => chess.move(movement.SQUARE_FROM, movement.SQUARE_TO)).toThrow(
-    "move invalid"
   );
 }
 
@@ -253,5 +259,14 @@ const MOVEMENTS_MOVE_INVALID = [
     FEN: "rnbqkbnr/ppp2ppp/8/2Ppp3/3QP3/8/PP3PPP/RNB1KBNR w KQkq - 0 1",
     SQUARE_FROM: "c5",
     SQUARE_TO: "d6"
+  }
+];
+
+const MOVEMENTS_TARGET_KING = [
+  {
+    TITLE: "KNIGTH MOVE INVALID",
+    FEN: "rnbqkb1r/ppp2ppp/8/2Ppn3/3PQ3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
+    SQUARE_FROM: "e5",
+    SQUARE_TO: "d3"
   }
 ];
