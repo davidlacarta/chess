@@ -13,6 +13,12 @@ describe("Chess", function() {
     });
   });
 
+  it("should move piece", function() {
+    MOVEMENTS_CASTLING_KING.forEach(movement => {
+      testCastlingKing(new Chess(movement.FEN), movement);
+    });
+  });
+
   it("should throw exception", function() {
     MOVEMENTS_MOVE_INVALID.forEach(movement => {
       const chess = new Chess(movement.FEN);
@@ -30,10 +36,43 @@ describe("Chess", function() {
       ).toThrow("target king");
     });
   });
+
+  it("should throw exception promotion type required", function() {
+    MOVEMENTS_INVALID_PAWN_PROMOTION.forEach(movement => {
+      const chess = new Chess(movement.FEN);
+      expect(() =>
+        chess.move(
+          movement.SQUARE_FROM,
+          movement.SQUARE_TO,
+          movement.PROMOTION_TYPE
+        )
+      ).toThrow("promotion type required");
+    });
+  });
 });
 
+function testCastlingKing(chess, movement) {
+  chess.castlingKing();
+  const fenResult = chess.toFen();
+  const isEqual = movement.RESULT_FEN === fenResult;
+  expect(isEqual).toBeTruthy(
+    [
+      "",
+      `${chess.toAscii(true)}`,
+      `${movement.TITLE}`,
+      `FEN expect: ${movement.RESULT_FEN}`,
+      `FEN result: ${fenResult}`,
+      ""
+    ].join("\n")
+  );
+}
+
 function testMove(chess, movement) {
-  const result = chess.move(movement.SQUARE_FROM, movement.SQUARE_TO);
+  const result = chess.move(
+    movement.SQUARE_FROM,
+    movement.SQUARE_TO,
+    movement.PROMOTION_TYPE
+  );
   const fenResult = chess.toFen();
   const isEqual =
     pieceIsEqual(result, movement.RESULT) && movement.RESULT_FEN === fenResult;
@@ -250,6 +289,26 @@ const MOVEMENTS_MOVE = [
     SQUARE_TO: "d7",
     RESULT: null,
     RESULT_FEN: "rnb1kbnr/pppq1ppp/8/3pp3/2PQP3/8/PP3PPP/RNB1KBNR w KQkq - 1 2"
+  },
+  {
+    TITLE: "PAWN PROMOTION",
+    FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
+    SQUARE_FROM: "b7",
+    SQUARE_TO: "b8",
+    PROMOTION_TYPE: "q",
+    RESULT: null,
+    RESULT_FEN:
+      "rqbqkbnr/p1p2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R b KQkq - 0 4"
+  },
+  {
+    TITLE: "PAWN PROMOTION CAPTURE",
+    FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
+    SQUARE_FROM: "b7",
+    SQUARE_TO: "a8",
+    PROMOTION_TYPE: "q",
+    RESULT: { type: "r", color: "b" },
+    RESULT_FEN:
+      "q1bqkbnr/p1p2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R b KQkq - 0 4"
   }
 ];
 
@@ -268,5 +327,24 @@ const MOVEMENTS_TARGET_KING = [
     FEN: "rnbqkb1r/ppp2ppp/8/2Ppn3/3PQ3/8/PP3PPP/RNB1KBNR b KQkq - 0 1",
     SQUARE_FROM: "e5",
     SQUARE_TO: "d3"
+  }
+];
+
+const MOVEMENTS_INVALID_PAWN_PROMOTION = [
+  {
+    TITLE: "PAWN PROMOTION PROMOTION TYPE INVALID",
+    FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
+    SQUARE_FROM: "b7",
+    SQUARE_TO: "b8",
+    PROMOTION_TYPE: "p"
+  }
+];
+
+const MOVEMENTS_CASTLING_KING = [
+  {
+    TITLE: "KING CASTLING VALID",
+    FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
+    RESULT_FEN:
+      "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b Qkq - 3 4"
   }
 ];

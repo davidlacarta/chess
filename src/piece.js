@@ -3,9 +3,28 @@ const PIECE_COLOR = {
   BLACK: "b"
 };
 
+const PIECE_TYPE = {
+  PAWN: "p",
+  KNIGHT: "n",
+  BISHOP: "b",
+  ROOK: "r",
+  QUEEN: "q",
+  KING: "k"
+};
+
 const PIECE_OFFSETS_CROSS = offsetCombinations([0, 1]);
 const PIECE_OFFSETS_DIAGONAL = offsetCombinations([1, 1]);
 const PIECE_OFFSETS_KNIGHT = offsetCombinations([1, 2]);
+
+const PAWN_PROMOTION = {
+  w: 8,
+  b: 1
+};
+
+const PAWN_START = {
+  w: 2,
+  b: 7
+};
 
 const PAWN_OFFSETS = {
   w: [[1, 0], [1, -1], [1, 1]],
@@ -69,14 +88,17 @@ function removeDuplicates(offsets) {
 }
 
 function isPawn(piece) {
-  return piece && piece.type === "p";
+  return piece && piece.type === PIECE_TYPE.PAWN;
 }
 
 module.exports = {
   PIECE_COLOR,
+  PIECE_TYPE,
   PIECE_OFFSETS,
   PIECE_OFFSETS_NUM_MOVES,
   PAWN_OFFSETS,
+  PAWN_PROMOTION,
+  PAWN_START,
   CASTLING,
   CASTLING_TYPE,
   CASTLING_SAFE,

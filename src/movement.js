@@ -1,8 +1,11 @@
 const {
   PIECE_COLOR,
+  PIECE_TYPE,
   PIECE_OFFSETS,
   PIECE_OFFSETS_NUM_MOVES,
   PAWN_OFFSETS,
+  PAWN_PROMOTION,
+  PAWN_START,
   CASTLING,
   CASTLING_SAFE,
   isPawn
@@ -10,6 +13,7 @@ const {
 const {
   flat,
   squareInBoard,
+  setPiece,
   toArrayPosition,
   toAlgebraicPosition
 } = require("./board");
@@ -38,9 +42,7 @@ function getSquareMoves({ state, algebraicPosition }) {
 function getPawnNumMoves(square) {
   const pieceColor = square.piece.color;
   const rowSquare = Number(square.square[1]);
-  const isPawnStartPosition =
-    (rowSquare === 2 && PIECE_COLOR.WHITE === pieceColor) ||
-    (rowSquare === 7 && PIECE_COLOR.BLACK === pieceColor);
+  const isPawnStartPosition = PAWN_START[pieceColor] === rowSquare;
   return isPawnStartPosition ? 2 : 1;
 }
 
@@ -123,7 +125,13 @@ function isPawnMoveCapture({ square, nextSquare }) {
   return !sameColumn;
 }
 
-function moveSquare({ state, algebraicPositionFrom, algebraicPositionTo }) {
+function moveSquare({
+  state,
+  algebraicPositionFrom,
+  algebraicPositionTo,
+  promotionType
+}) {
+  const { activeColour } = state;
   const virtualState = state;
   const squareTarget = moveSquareVirtual({
     state: virtualState,
@@ -133,8 +141,43 @@ function moveSquare({ state, algebraicPositionFrom, algebraicPositionTo }) {
   if (isTargetKing(virtualState)) {
     throw "target king";
   }
+  const virtualSquareTo = squareInBoard({
+    board: virtualState.board,
+    algebraicPosition: algebraicPositionTo
+  });
+  if (
+    isPawnPromotion({
+      square: virtualSquareTo,
+      activeColour
+    })
+  ) {
+    pawnPromotion({ state, virtualState, virtualSquareTo, promotionType });
+  }
   state = virtualState;
   return squareTarget;
+}
+
+function isPawnPromotion({ square, activeColour }) {
+  const squareNumber = Number(square.square[1]);
+  const isRowPromotion = squareNumber === PAWN_PROMOTION[activeColour];
+  return isPawn(square.piece) && isRowPromotion;
+}
+
+function pawnPromotion({
+  state: { activeColour },
+  virtualState,
+  virtualSquareTo,
+  promotionType
+}) {
+  const isValidType = Object.values(PIECE_TYPE).find(
+    type => PIECE_TYPE.PAWN !== type && type === promotionType
+  );
+  if (!isValidType) {
+    throw "promotion type required";
+  }
+  const { board } = virtualState;
+  const piece = { type: promotionType, color: activeColour };
+  setPiece({ board, piece, algebraicPosition: virtualSquareTo.square });
 }
 
 function moveSquareVirtual({
@@ -284,7 +327,7 @@ function getSquareKing({ board, color }) {
           piece =>
             piece.piece != null &&
             piece.piece.color === color &&
-            piece.piece.type === "k"
+            piece.piece.type === PIECE_TYPE.KING
         )
     )
     .filter(square => !!square)[0];
@@ -389,7 +432,7 @@ function isEmptySquare({ board, algebraicPosition }) {
 
 function isKingSquare({ board, algebraicPosition }) {
   const square = squareInBoard({ board, algebraicPosition });
-  return square.piece !== null && square.piece.type === "k";
+  return square.piece !== null && square.piece.type === PIECE_TYPE.KING;
 }
 
 module.exports = {

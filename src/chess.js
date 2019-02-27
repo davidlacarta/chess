@@ -44,11 +44,12 @@ class Chess {
     return isTargetKing(this.state);
   }
 
-  move(algebraicPositionFrom, algebraicPositionTo) {
+  move(algebraicPositionFrom, algebraicPositionTo, promotionType) {
     return moveSquare({
       state: this.state,
       algebraicPositionFrom,
-      algebraicPositionTo
+      algebraicPositionTo,
+      promotionType
     });
   }
 

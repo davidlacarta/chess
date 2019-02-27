@@ -113,6 +113,11 @@ function squareInBoard({ board, algebraicPosition, offset }) {
   };
 }
 
+function setPiece({ board, piece, algebraicPosition }) {
+  const arrayPosition = toArrayPosition(algebraicPosition);
+  board[arrayPosition[0]][arrayPosition[1]] = piece;
+}
+
 function toArrayPosition(algebraicPosition) {
   const letter = algebraicPosition[0];
   const number = algebraicPosition[1];
@@ -142,6 +147,7 @@ module.exports = {
   fenToState,
   stateToFen,
   squareInBoard,
+  setPiece,
   toArrayPosition,
   toAlgebraicPosition
 };
