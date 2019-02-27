@@ -1,3 +1,5 @@
+const { unique } = require("./utils");
+
 const PIECE_COLOR = {
   WHITE: "w",
   BLACK: "b"
@@ -69,22 +71,13 @@ function offsetCombinations(offset) {
   const reverseInverse = [offset, reverseRow, reverseCol, reverseRowCol].map(
     offsetCombination => [offsetCombination[1], offsetCombination[0]]
   );
-  return removeDuplicates([
+  return unique([
     offset,
     reverseRow,
     reverseCol,
     reverseRowCol,
     ...reverseInverse
   ]);
-}
-
-function removeDuplicates(offsets) {
-  return offsets.reduce((previous, current) => {
-    const isAdded = previous.find(
-      element => element[0] === current[0] && element[1] === current[1]
-    );
-    return isAdded ? previous : previous.concat([current]);
-  }, []);
 }
 
 function isPawn(piece) {

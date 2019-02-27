@@ -1,11 +1,8 @@
 const { PIECE_COLOR } = require("./piece");
+const { flat } = require("./utils");
 
 const REGEX_FEN_PIECE = /(r|n|b|q|k|p)/i;
 const REGEX_FEN_PIECE_WHITE = /(R|N|B|Q|K|P)/;
-
-function flat(array) {
-  return [].concat.apply([], array);
-}
 
 function fenToState(fenState) {
   const fenStateRecords = fenState.split(" ");
@@ -119,27 +116,22 @@ function setPiece({ board, piece, algebraicPosition }) {
 }
 
 function toArrayPosition(algebraicPosition) {
-  const letter = algebraicPosition[0];
-  const number = algebraicPosition[1];
+  const [letter, number] = algebraicPosition;
   const row = "12345678".indexOf(number);
   const col = "abcdefgh".indexOf(letter);
   return [row, col];
 }
 
 function toAlgebraicPosition(arrayPosition) {
-  const row = arrayPosition[0];
-  const col = arrayPosition[1];
+  const [row, col] = arrayPosition;
   const letter = "abcdefgh"[col];
   const number = "12345678"[row];
   return `${letter}${number}`;
 }
 
 function isOverflow({ board, arrayPosition }) {
-  const row = arrayPosition[0];
-  const col = arrayPosition[1];
-  return (
-    row < 0 || row > board.length - 1 || col < 0 || col > board[row].length - 1
-  );
+  const [row, col] = arrayPosition;
+  return row < 0 || row > 7 || col < 0 || col > 7;
 }
 
 module.exports = {

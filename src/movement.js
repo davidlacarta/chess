@@ -11,12 +11,12 @@ const {
   isPawn
 } = require("./piece");
 const {
-  flat,
   squareInBoard,
   setPiece,
   toArrayPosition,
   toAlgebraicPosition
 } = require("./board");
+const { flat } = require("./utils");
 
 function getSquareMoves({ state, algebraicPosition }) {
   const { board } = state;
