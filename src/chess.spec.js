@@ -37,6 +37,13 @@ describe("Chess", function() {
     });
   });
 
+  it("should throw exception target castling", function() {
+    MOVEMENTS_CASTLING_KING_INVALID.forEach(movement => {
+      const chess = new Chess(movement.FEN);
+      expect(() => chess.castlingKing()).toThrow("castling target");
+    });
+  });
+
   it("should throw exception promotion type required", function() {
     MOVEMENTS_INVALID_PAWN_PROMOTION.forEach(movement => {
       const chess = new Chess(movement.FEN);
@@ -346,5 +353,12 @@ const MOVEMENTS_CASTLING_KING = [
     FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
     RESULT_FEN:
       "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b Qkq - 3 4"
+  }
+];
+
+const MOVEMENTS_CASTLING_KING_INVALID = [
+  {
+    TITLE: "KING CASTLING VALID",
+    FEN: "r1bqk1nr/ppp2ppp/2np4/4p3/2B5/4PN2/PPPP1PbP/RNBQK2R w KQkq - 2 4"
   }
 ];

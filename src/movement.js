@@ -8,7 +8,8 @@ const {
   PAWN_START,
   CASTLING,
   CASTLING_SAFE,
-  isPawn
+  isPawn,
+  inverseColor
 } = require("./piece");
 const {
   squareInBoard,
@@ -16,7 +17,7 @@ const {
   toArrayPosition,
   toAlgebraicPosition
 } = require("./board");
-const { flat } = require("./utils");
+const { flat, cloneDeep } = require("./utils");
 
 function getSquareMoves({ state, algebraicPosition }) {
   const { board } = state;
@@ -395,7 +396,13 @@ function castling({ state, castlingType }) {
   ) {
     throw "castling invalid";
   }
-  if (!!squaresSafes.find(squareSafe => isTarget({ state, squareSafe }))) {
+  const stateInverseColor = cloneDeep(state);
+  stateInverseColor.activeColour = inverseColor(state.activeColour);
+  if (
+    !!squaresSafes.find(squareSafe =>
+      isTarget({ state: stateInverseColor, algebraicPosition: squareSafe })
+    )
+  ) {
     throw "castling target";
   }
   moveSquareBoard({

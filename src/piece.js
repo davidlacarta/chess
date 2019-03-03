@@ -84,6 +84,17 @@ function isPawn(piece) {
   return piece && piece.type === PIECE_TYPE.PAWN;
 }
 
+function inverseColor(rightColor) {
+  const rightIndexColor = Object.values(PIECE_COLOR)
+    .map((color, index) => ({ color: color, index: index }))
+    .find(object => object.color === rightColor).index;
+  const sizeColors = Object.values(PIECE_COLOR).length;
+  const inverseIndexColor = (rightIndexColor + 1) % sizeColors;
+  return Object.values(PIECE_COLOR).find(
+    (_, index) => index === inverseIndexColor
+  );
+}
+
 module.exports = {
   PIECE_COLOR,
   PIECE_TYPE,
@@ -95,5 +106,6 @@ module.exports = {
   CASTLING,
   CASTLING_TYPE,
   CASTLING_SAFE,
-  isPawn
+  isPawn,
+  inverseColor
 };
