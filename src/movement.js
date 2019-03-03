@@ -36,7 +36,16 @@ function getSquareMoves({ state, algebraicPosition }) {
     ? getPawnNumMoves(square)
     : PIECE_OFFSETS_NUM_MOVES[square.piece.type];
   return flat(
-    pieceOffsets.map(offset => getMoves({ state, square, offset, numMoves }))
+    pieceOffsets.map(offset =>
+      getMoves({
+        state,
+        square,
+        offset,
+        numMoves,
+        nextMoves: [],
+        currentSquare: square.square
+      })
+    )
   );
 }
 
@@ -47,18 +56,7 @@ function getPawnNumMoves(square) {
   return isPawnStartPosition ? 2 : 1;
 }
 
-function getMoves({ state, square, offset, numMoves }) {
-  return getMovesRecursive({
-    state,
-    square,
-    offset,
-    numMoves,
-    nextMoves: [],
-    currentSquare: square.square
-  });
-}
-
-function getMovesRecursive({
+function getMoves({
   state,
   square,
   offset,
@@ -77,7 +75,7 @@ function getMovesRecursive({
   }
   return moveIsLast({ square, nextMoves, nextSquare, numMoves })
     ? nextMoves
-    : getMovesRecursive({
+    : getMoves({
         state,
         square,
         offset,

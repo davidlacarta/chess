@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index",
-    "test": "jasmine --config=jasmine.json"
+    "test": "jasmine --config=spec/config/jasmine.json"
   },
   "repository": {
     "type": "git",
