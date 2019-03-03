@@ -22,18 +22,24 @@ describe("Chess", function() {
   it("should throw exception", function() {
     MOVEMENTS_MOVE_INVALID.forEach(movement => {
       const chess = new Chess(movement.FEN);
-      expect(() =>
-        chess.move(movement.SQUARE_FROM, movement.SQUARE_TO)
-      ).toThrow("move invalid");
+      try {
+        chess.move(movement.SQUARE_FROM, movement.SQUARE_TO);
+      } catch (e) {
+        expect(e === "move invalid").toBeTruthy();
+      }
+      expect(chess.toFen() === movement.FEN).toBeTruthy();
     });
   });
 
   it("should throw exception king", function() {
     MOVEMENTS_TARGET_KING.forEach(movement => {
       const chess = new Chess(movement.FEN);
-      expect(() =>
-        chess.move(movement.SQUARE_FROM, movement.SQUARE_TO)
-      ).toThrow("target king");
+      try {
+        chess.move(movement.SQUARE_FROM, movement.SQUARE_TO);
+      } catch (e) {
+        expect(e === "target king").toBeTruthy();
+      }
+      expect(chess.toFen() === movement.FEN).toBeTruthy();
     });
   });
 
@@ -305,7 +311,7 @@ const MOVEMENTS_MOVE = [
     PROMOTION_TYPE: "q",
     RESULT: null,
     RESULT_FEN:
-      "rqbqkbnr/p1p2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R b KQkq - 0 4"
+      "rQbqkbnr/p1p2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R b KQkq - 0 4"
   },
   {
     TITLE: "PAWN PROMOTION CAPTURE",
@@ -315,7 +321,7 @@ const MOVEMENTS_MOVE = [
     PROMOTION_TYPE: "q",
     RESULT: { type: "r", color: "b" },
     RESULT_FEN:
-      "q1bqkbnr/p1p2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R b KQkq - 0 4"
+      "Q1bqkbnr/p1p2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R b KQkq - 0 4"
   }
 ];
 

@@ -17,7 +17,7 @@ const {
   toArrayPosition,
   toAlgebraicPosition
 } = require("./board");
-const { flat, cloneDeep } = require("./utils");
+const { flat, cloneDeep, unique } = require("./utils");
 
 function getSquareMoves({ state, algebraicPosition }) {
   const { board } = state;
@@ -133,8 +133,8 @@ function moveSquare({
   promotionType
 }) {
   const { activeColour } = state;
-  const virtualState = state;
-  const squareTarget = moveSquareVirtual({
+  const virtualState = cloneDeep(state);
+  const squareCaptured = moveSquareVirtual({
     state: virtualState,
     algebraicPositionFrom,
     algebraicPositionTo
@@ -154,8 +154,7 @@ function moveSquare({
   ) {
     pawnPromotion({ state, virtualState, virtualSquareTo, promotionType });
   }
-  state = virtualState;
-  return squareTarget;
+  return { state: cloneDeep(virtualState), squareCaptured };
 }
 
 function isPawnPromotion({ square, activeColour }) {
@@ -341,7 +340,7 @@ function isTarget({ state, algebraicPosition }) {
 }
 
 function getSquareMovesActiveColor(state) {
-  return removeDuplicates(
+  return unique(
     flat(
       squaresActiveColor(state).map(algebraicPosition => {
         const moves = getSquareMoves({ state, algebraicPosition });
@@ -349,15 +348,6 @@ function getSquareMovesActiveColor(state) {
       })
     )
   );
-}
-
-function removeDuplicates(squares) {
-  return squares.reduce((accum, current) => {
-    const isAdded = accum.find(
-      accumElement => accumElement.square === current.square
-    );
-    return isAdded ? accum : accum.concat([current]);
-  }, []);
 }
 
 function squaresActiveColor(state) {

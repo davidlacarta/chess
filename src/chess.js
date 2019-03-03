@@ -45,12 +45,14 @@ class Chess {
   }
 
   move(algebraicPositionFrom, algebraicPositionTo, promotionType) {
-    return moveSquare({
+    const { state, squareCaptured } = moveSquare({
       state: this.state,
       algebraicPositionFrom,
       algebraicPositionTo,
       promotionType
     });
+    this.state = state;
+    return squareCaptured;
   }
 
   toFen() {
