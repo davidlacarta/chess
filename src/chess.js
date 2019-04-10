@@ -59,8 +59,9 @@ class Chess {
     return stateToFen(this.state);
   }
 
-  toAscii(showAlgebraic) {
-    return boardToAscii(this.state.board, showAlgebraic);
+  toAscii(props) {
+    const showAlgebraic = props && !!props.showAlgebraic;
+    return boardToAscii({ board: this.state.board, showAlgebraic });
   }
 }
 

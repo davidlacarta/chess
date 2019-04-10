@@ -15,7 +15,7 @@ const FEN_PIECE_ASCII = {
   p: "\u265F" // ♟
 };
 
-function boardToAscii(board, showAlgebraic) {
+function boardToAscii({ board, showAlgebraic }) {
   const colSeparator = " ";
   const rowSeparator = "\n";
   return [...board]
