@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/davidlacarta/chess.svg?branch=master)](https://travis-ci.org/davidlacarta/chess)
+[![npm version](https://img.shields.io/badge/npm-chess--base-blue.svg)](https://www.npmjs.com/package/chess-base)
 
 # Chess board
 
