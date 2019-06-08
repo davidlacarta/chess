@@ -19,9 +19,4 @@ function cloneDeep(object) {
   return JSON.parse(JSON.stringify(object));
 }
 
-module.exports = {
-  isEqual,
-  unique,
-  flat,
-  cloneDeep
-};
+export { isEqual, unique, flat, cloneDeep };

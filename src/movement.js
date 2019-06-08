@@ -1,4 +1,4 @@
-const {
+import {
   PIECE_COLOR,
   PIECE_TYPE,
   PIECE_OFFSETS,
@@ -10,14 +10,14 @@ const {
   CASTLING_SAFE,
   isPawn,
   inverseColor
-} = require("./piece");
-const {
+} from "./piece";
+import {
   squareInBoard,
   setPiece,
   toArrayPosition,
   toAlgebraicPosition
-} = require("./board");
-const { flat, cloneDeep, unique } = require("./utils");
+} from "./board";
+import { flat, cloneDeep, unique } from "./utils";
 
 function getSquareMoves({ state, algebraicPosition }) {
   const { board } = state;
@@ -430,10 +430,4 @@ function isKingSquare({ board, algebraicPosition }) {
   return square.piece !== null && square.piece.type === PIECE_TYPE.KING;
 }
 
-module.exports = {
-  getSquareMoves,
-  moveSquare,
-  isTarget,
-  isTargetKing,
-  castling
-};
+export { getSquareMoves, moveSquare, isTarget, isTargetKing, castling };

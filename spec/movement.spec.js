@@ -1,4 +1,5 @@
-const { isEqual } = require("../src/utils");
+import { isEqual } from "../src/utils";
+import { Chess } from "../src/chess";
 
 const MOVEMENTS = [
   {
@@ -91,8 +92,6 @@ const MOVEMENTS = [
 ];
 
 describe("Movements", function() {
-  const { Chess } = require("../src/chess");
-
   it("should return availability movements", function() {
     MOVEMENTS.forEach(movement => {
       testGetMoves(new Chess(movement.FEN), movement);

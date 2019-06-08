@@ -1,3 +1,5 @@
+const { Chess } = require("../src/chess");
+
 const CASTLINGS_KING = [
   {
     TITLE: "KING CASTLING VALID",
@@ -15,8 +17,6 @@ const CASTLINGS_INVALID = [
 ];
 
 describe("Castling", function() {
-  const { Chess } = require("../src/chess");
-
   it("should castling king", function() {
     CASTLINGS_KING.forEach(movement => {
       testCastlingKing(new Chess(movement.FEN), movement);

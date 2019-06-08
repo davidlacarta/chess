@@ -1,4 +1,4 @@
-const { unique } = require("./utils");
+import { unique } from "./utils";
 
 const PIECE_COLOR = {
   WHITE: "w",
@@ -95,7 +95,7 @@ function inverseColor(rightColor) {
   );
 }
 
-module.exports = {
+export {
   PIECE_COLOR,
   PIECE_TYPE,
   PIECE_OFFSETS,

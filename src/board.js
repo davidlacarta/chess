@@ -1,5 +1,5 @@
-const { PIECE_COLOR } = require("./piece");
-const { flat } = require("./utils");
+import { PIECE_COLOR } from "./piece";
+import { flat } from "./utils";
 
 const REGEX_FEN_PIECE = /(r|n|b|q|k|p)/i;
 const REGEX_FEN_PIECE_WHITE = /(R|N|B|Q|K|P)/;
@@ -134,7 +134,7 @@ function isOverflow({ board, arrayPosition }) {
   return row < 0 || row > 7 || col < 0 || col > 7;
 }
 
-module.exports = {
+export {
   flat,
   fenToState,
   stateToFen,

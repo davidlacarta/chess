@@ -1,4 +1,4 @@
-const { PIECE_COLOR } = require("./piece");
+import { PIECE_COLOR } from "./piece";
 
 const FEN_PIECE_ASCII = {
   K: "\u2654", // ♔
@@ -41,4 +41,4 @@ function pieceToAscii(piece) {
     : FEN_PIECE_ASCII[piece.type];
 }
 
-module.exports = { boardToAscii };
+export { boardToAscii };

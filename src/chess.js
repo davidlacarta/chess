@@ -1,13 +1,13 @@
-const { fenToState, stateToFen, squareInBoard } = require("./board");
-const {
+import { fenToState, stateToFen, squareInBoard } from "./board";
+import {
   getSquareMoves,
   moveSquare,
   isTarget,
   isTargetKing,
   castling
-} = require("./movement");
-const { CASTLING_TYPE } = require("./piece");
-const { boardToAscii } = require("./ascii");
+} from "./movement";
+import { CASTLING_TYPE } from "./piece";
+import { boardToAscii } from "./ascii";
 
 const FEN_START_POSITION =
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -65,4 +65,4 @@ class Chess {
   }
 }
 
-module.exports = { Chess };
+export { Chess };
