@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/davidlacarta/chess.svg?branch=master)](https://travis-ci.org/davidlacarta/chess)
+
 # Chess board
 
 Chess board logic
