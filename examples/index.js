@@ -1,5 +1,5 @@
-const { Chess } = require("../dist/chess.js");
+const { Chess } = require("chess-base");
 
-const chess = new Chess();
-console.log(chess.toFen());
-console.log(chess.toAscii());
+const chessGame = new Chess();
+console.log(chessGame.toFen());
+console.log(chessGame.toAscii());

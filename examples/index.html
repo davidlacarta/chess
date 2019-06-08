@@ -11,9 +11,11 @@
     Open console...
   </body>
 
-  <script src="../dist/chess.js"></script>
+  <script src="https://unpkg.com/chess-base"></script>
   <script>
-    const chessGame = new chess.Chess();
+    const { Chess } = chess;
+
+    const chessGame = new Chess();
     console.log(chessGame.toFen());
     console.log(chessGame.toAscii());
   </script>
