@@ -1,12 +1,13 @@
 {
   "name": "chess-base",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "chess board logic",
   "main": "dist/chess.js",
   "module": "src/chess.js",
   "scripts": {
     "build": "webpack",
-    "test": "babel-node spec/run.js"
+    "test": "babel-node spec/run.js",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "repository": {
     "type": "git",
