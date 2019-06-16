@@ -80,18 +80,23 @@ function pieceToFenDot(piece) {
 
 function fenRowDotsToFenRow(fenRowDots) {
   const initChar = "";
+  
   return [...fenRowDots].reduce((previousChars, currentChar) => {
     if (REGEX_FEN_PIECE.test(currentChar)) {
       return previousChars.concat(currentChar);
     }
+
     if (previousChars === initChar) {
       return previousChars.concat("1");
     }
+
     const previousChar = previousChars.slice(-1);
     if (REGEX_FEN_PIECE.test(previousChar)) {
       return previousChars.concat("1");
     }
+
     return previousChars.slice(0, -1).concat(Number(previousChar) + 1);
+
   }, initChar);
 }
 
@@ -101,9 +106,11 @@ function squareInBoard({ board, algebraicPosition, offset }) {
     arrayPosition[0] += offset[0];
     arrayPosition[1] += offset[1];
   }
+
   if (isOverflow({ board, arrayPosition })) {
     return;
   }
+
   return {
     square: toAlgebraicPosition(arrayPosition),
     piece: board[arrayPosition[0]][arrayPosition[1]]
@@ -117,15 +124,19 @@ function setPiece({ board, piece, algebraicPosition }) {
 
 function toArrayPosition(algebraicPosition) {
   const [letter, number] = algebraicPosition;
+
   const row = "12345678".indexOf(number);
   const col = "abcdefgh".indexOf(letter);
+
   return [row, col];
 }
 
 function toAlgebraicPosition(arrayPosition) {
   const [row, col] = arrayPosition;
+
   const letter = "abcdefgh"[col];
   const number = "12345678"[row];
+
   return `${letter}${number}`;
 }
 

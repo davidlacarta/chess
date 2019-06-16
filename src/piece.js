@@ -1,5 +1,3 @@
-import { unique } from "./utils";
-
 const PIECE_COLOR = {
   WHITE: "w",
   BLACK: "b"
@@ -14,9 +12,26 @@ const PIECE_TYPE = {
   KING: "k"
 };
 
-const PIECE_OFFSETS_CROSS = offsetCombinations([0, 1]);
-const PIECE_OFFSETS_DIAGONAL = offsetCombinations([1, 1]);
-const PIECE_OFFSETS_KNIGHT = offsetCombinations([1, 2]);
+const OFFSETS_CROSS = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+const OFFSETS_DIAGONAL = [[1, 1], [-1, 1], [1, -1], [-1, -1]];
+const OFFSETS_KNIGHT = [
+  [1, 2],
+  [-1, 2],
+  [1, -2],
+  [-1, -2],
+  [2, 1],
+  [2, -1],
+  [-2, 1],
+  [-2, -1]
+];
+
+const PIECE_OFFSETS = {
+  n: OFFSETS_KNIGHT,
+  b: OFFSETS_DIAGONAL,
+  r: OFFSETS_CROSS,
+  q: [...OFFSETS_CROSS, ...OFFSETS_DIAGONAL],
+  k: [...OFFSETS_CROSS, ...OFFSETS_DIAGONAL]
+};
 
 const PAWN_PROMOTION = {
   w: 8,
@@ -31,14 +46,6 @@ const PAWN_START = {
 const PAWN_OFFSETS = {
   w: [[1, 0], [1, -1], [1, 1]],
   b: [[-1, 0], [-1, -1], [-1, 1]]
-};
-
-const PIECE_OFFSETS = {
-  n: PIECE_OFFSETS_KNIGHT,
-  b: PIECE_OFFSETS_DIAGONAL,
-  r: PIECE_OFFSETS_CROSS,
-  q: [...PIECE_OFFSETS_CROSS, ...PIECE_OFFSETS_DIAGONAL],
-  k: [...PIECE_OFFSETS_CROSS, ...PIECE_OFFSETS_DIAGONAL]
 };
 
 const PIECE_OFFSETS_NUM_MOVES = {
@@ -64,35 +71,14 @@ const CASTLING_SAFE = {
   q: ["b", "c", "d", "e"]
 };
 
-function offsetCombinations(offset) {
-  const reverseRow = [offset[0] * -1, offset[1]];
-  const reverseCol = [offset[0], offset[1] * -1];
-  const reverseRowCol = [offset[0] * -1, offset[1] * -1];
-  const reverseInverse = [offset, reverseRow, reverseCol, reverseRowCol].map(
-    offsetCombination => [offsetCombination[1], offsetCombination[0]]
-  );
-  return unique([
-    offset,
-    reverseRow,
-    reverseCol,
-    reverseRowCol,
-    ...reverseInverse
-  ]);
-}
-
 function isPawn(piece) {
   return piece && piece.type === PIECE_TYPE.PAWN;
 }
 
 function inverseColor(rightColor) {
-  const rightIndexColor = Object.values(PIECE_COLOR)
-    .map((color, index) => ({ color: color, index: index }))
-    .find(object => object.color === rightColor).index;
-  const sizeColors = Object.values(PIECE_COLOR).length;
-  const inverseIndexColor = (rightIndexColor + 1) % sizeColors;
-  return Object.values(PIECE_COLOR).find(
-    (_, index) => index === inverseIndexColor
-  );
+  return PIECE_COLOR.WHITE === rightColor
+    ? PIECE_COLOR.BLACK
+    : PIECE_COLOR.WHITE;
 }
 
 export {

@@ -1,18 +1,18 @@
 import { PIECE_COLOR } from "./piece";
 
 const FEN_PIECE_ASCII = {
-  K: "\u2654", // ♔
-  Q: "\u2655", // ♕
-  R: "\u2656", // ♖
-  B: "\u2657", // ♗
-  N: "\u2658", // ♘
-  P: "\u2659", // ♙
-  k: "\u265A", // ♚
-  q: "\u265B", // ♛
-  r: "\u265C", // ♜
-  b: "\u265D", // ♝
-  n: "\u265E", // ♞
-  p: "\u265F" // ♟
+  K: "♔",
+  Q: "♕",
+  R: "♖",
+  B: "♗",
+  N: "♘",
+  P: "♙",
+  k: "♚",
+  q: "♛",
+  r: "♜",
+  b: "♝",
+  n: "♞",
+  p: "♟"
 };
 
 function boardToAscii({ board, showAlgebraic }) {
@@ -34,11 +34,13 @@ function boardToAscii({ board, showAlgebraic }) {
 function pieceToAscii(piece) {
   const isEmptySquare = piece === null;
   if (isEmptySquare) {
-    return ".";
+    return " ";
   }
-  return piece.color === PIECE_COLOR.WHITE
-    ? FEN_PIECE_ASCII[piece.type.toUpperCase()]
-    : FEN_PIECE_ASCII[piece.type];
+
+  const asciiKey =
+    piece.color === PIECE_COLOR.WHITE ? piece.type.toUpperCase() : piece.type;
+
+  return FEN_PIECE_ASCII[asciiKey];
 }
 
 export { boardToAscii };

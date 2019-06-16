@@ -1,5 +1,6 @@
 import { fenToState, stateToFen, squareInBoard } from "./board";
 import {
+  getSquareMovesTurn,
   getSquareMoves,
   moveSquare,
   isTarget,
@@ -19,6 +20,10 @@ class Chess {
 
   getSquare(algebraicPosition) {
     return squareInBoard({ board: this.state.board, algebraicPosition });
+  }
+
+  getMovesTurn() {
+    return getSquareMovesTurn(this.state);
   }
 
   getMoves(algebraicPosition) {
@@ -60,7 +65,7 @@ class Chess {
   }
 
   toAscii(props) {
-    const showAlgebraic = props && !!props.showAlgebraic;
+    const showAlgebraic = props && props.extend;
     return boardToAscii({ board: this.state.board, showAlgebraic });
   }
 }

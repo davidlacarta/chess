@@ -19,29 +19,35 @@ import {
 } from "./board";
 import { flat, cloneDeep, unique } from "./utils";
 
+function getSquareMovesTurn(state) {
+  return flat(
+    squaresActiveColor(state).map(algebraicPosition => {
+      const moves = getSquareMoves({ state, algebraicPosition });
+      return moves.map(move => ({
+        from: algebraicPosition,
+        to: move.square,
+        capture: move.piece
+      }));
+    })
+  );
+}
+
 function getSquareMoves({ state, algebraicPosition }) {
-  const { board } = state;
-  const square = squareInBoard({ board, algebraicPosition });
-  if (
-    !square ||
-    square.piece === null ||
-    square.piece.color !== state.activeColour
-  ) {
+  const square = squareInBoard({ board: state.board, algebraicPosition });
+
+  const pieceValidSquare =
+    square && square.piece && square.piece.color === state.activeColour;
+  if (!pieceValidSquare) {
     return [];
   }
-  const pieceOffsets = isPawn(square.piece)
-    ? PAWN_OFFSETS[square.piece.color]
-    : PIECE_OFFSETS[square.piece.type];
-  const numMoves = isPawn(square.piece)
-    ? getPawnNumMoves(square)
-    : PIECE_OFFSETS_NUM_MOVES[square.piece.type];
+
   return flat(
-    pieceOffsets.map(offset =>
+    getPieceOffsets(square).map(offset =>
       getMoves({
         state,
         square,
         offset,
-        numMoves,
+        numMoves: getNumMoves(square),
         nextMoves: [],
         currentSquare: square.square
       })
@@ -49,10 +55,24 @@ function getSquareMoves({ state, algebraicPosition }) {
   );
 }
 
+function getPieceOffsets(square) {
+  return isPawn(square.piece)
+    ? PAWN_OFFSETS[square.piece.color]
+    : PIECE_OFFSETS[square.piece.type];
+}
+
+function getNumMoves(square) {
+  return isPawn(square.piece)
+    ? getPawnNumMoves(square)
+    : PIECE_OFFSETS_NUM_MOVES[square.piece.type];
+}
+
 function getPawnNumMoves(square) {
-  const pieceColor = square.piece.color;
-  const rowSquare = Number(square.square[1]);
-  const isPawnStartPosition = PAWN_START[pieceColor] === rowSquare;
+  const color = square.piece.color;
+  const [, row] = square.square;
+
+  const isPawnStartPosition = PAWN_START[color] === Number(row);
+
   return isPawnStartPosition ? 2 : 1;
 }
 
@@ -70,9 +90,11 @@ function getMoves({
     algebraicPosition: currentSquare,
     offset
   });
+
   if (moveIsValid({ square, nextSquare, passantTarget })) {
     nextMoves.push(nextSquare);
   }
+
   return moveIsLast({ square, nextMoves, nextSquare, numMoves })
     ? nextMoves
     : getMoves({
@@ -90,6 +112,7 @@ function moveIsValid({ square, nextSquare, passantTarget }) {
   const nextSquareIsEmpty = nextSquare && nextSquare.piece === null;
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
+
   return isPawn(square.piece)
     ? movePawnIsValid({ square, nextSquare, passantTarget })
     : nextSquareIsEmpty || nextPieceIsCapture;
@@ -101,6 +124,7 @@ function movePawnIsValid({ square, nextSquare, passantTarget }) {
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const nextPieceIsCapture =
     nextSquareIsPlaced && nextSquare.piece.color !== square.piece.color;
+
   return (
     (nextSquare && !isMoveCapture && !nextSquareIsPlaced) ||
     (nextSquare && isMoveCapture && nextPieceIsCapture) ||
@@ -111,6 +135,7 @@ function movePawnIsValid({ square, nextSquare, passantTarget }) {
 function moveIsLast({ square, nextMoves, nextSquare, numMoves }) {
   const nextSquareIsPlaced = nextSquare && nextSquare.piece !== null;
   const numMovesCompleted = numMoves !== -1 && nextMoves.length === numMoves;
+
   return (
     !nextSquare ||
     nextSquareIsPlaced ||
@@ -137,9 +162,11 @@ function moveSquare({
     algebraicPositionFrom,
     algebraicPositionTo
   });
+
   if (isTargetKing(virtualState)) {
     throw "target king";
   }
+
   const virtualSquareTo = squareInBoard({
     board: virtualState.board,
     algebraicPosition: algebraicPositionTo
@@ -152,12 +179,14 @@ function moveSquare({
   ) {
     pawnPromotion({ state, virtualState, virtualSquareTo, promotionType });
   }
+
   return { state: cloneDeep(virtualState), squareCaptured };
 }
 
 function isPawnPromotion({ square, activeColour }) {
   const squareNumber = Number(square.square[1]);
   const isRowPromotion = squareNumber === PAWN_PROMOTION[activeColour];
+
   return isPawn(square.piece) && isRowPromotion;
 }
 
@@ -323,7 +352,7 @@ function getSquareKing({ board, color }) {
         }))
         .find(
           piece =>
-            piece.piece != null &&
+            piece.piece !== null &&
             piece.piece.color === color &&
             piece.piece.type === PIECE_TYPE.KING
         )
@@ -370,29 +399,17 @@ function castling({ state, castlingType }) {
     king: { from: kingFrom, to: kingTo },
     rook: { from: rookFrom, to: rookTo }
   } = CASTLING[castlingType];
+
   const { board, activeColour } = state;
   const castlingRow = PIECE_COLOR.WHITE === activeColour ? "1" : "8";
   const squaresSafes = CASTLING_SAFE[castlingType].map(square =>
     square.concat(castlingRow)
   );
-  if (
-    !!squaresSafes.find(
-      algebraicPosition =>
-        !isEmptySquare({ board, algebraicPosition }) &&
-        !isKingSquare({ board, algebraicPosition })
-    )
-  ) {
-    throw "castling invalid";
-  }
-  const stateInverseColor = cloneDeep(state);
-  stateInverseColor.activeColour = inverseColor(state.activeColour);
-  if (
-    !!squaresSafes.find(squareSafe =>
-      isTarget({ state: stateInverseColor, algebraicPosition: squareSafe })
-    )
-  ) {
-    throw "castling target";
-  }
+
+  checkAvailabilityCastling({ squaresSafes, board });
+
+  checkTargetCastling({ squaresSafes, state });
+
   moveSquareBoard({
     board,
     boardPositionFrom: toArrayPosition(kingFrom.concat(castlingRow)),
@@ -409,6 +426,30 @@ function castling({ state, castlingType }) {
   updateCastling({ state, castlingType });
   updateFullMoveNumber(state);
   changeActiveColor(state);
+}
+
+function checkAvailabilityCastling({ squaresSafes, board }) {
+  if (
+    !!squaresSafes.find(
+      algebraicPosition =>
+        !isEmptySquare({ board, algebraicPosition }) &&
+        !isKingSquare({ board, algebraicPosition })
+    )
+  ) {
+    throw "castling invalid";
+  }
+}
+
+function checkTargetCastling({ squaresSafes, state }) {
+  const stateInverseColor = cloneDeep(state);
+  stateInverseColor.activeColour = inverseColor(state.activeColour);
+  if (
+    !!squaresSafes.find(squareSafe =>
+      isTarget({ state: stateInverseColor, algebraicPosition: squareSafe })
+    )
+  ) {
+    throw "castling target";
+  }
 }
 
 function updateCastling({ state, castlingType }) {
@@ -430,4 +471,11 @@ function isKingSquare({ board, algebraicPosition }) {
   return square.piece !== null && square.piece.type === PIECE_TYPE.KING;
 }
 
-export { getSquareMoves, moveSquare, isTarget, isTargetKing, castling };
+export {
+  getSquareMovesTurn,
+  getSquareMoves,
+  moveSquare,
+  isTarget,
+  isTargetKing,
+  castling
+};
