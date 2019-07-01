@@ -56,6 +56,23 @@ const MOVES = [
   }
 ];
 
+const MOVES_SAN = [
+  {
+    TITLE: "PAWN WHITE ADVANCE",
+    FEN: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    SQUARE_FROM: "e4",
+    RESULT: null,
+    RESULT_FEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+  },
+  {
+    TITLE: "PAWN BLACK ADVANCE",
+    FEN: "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+    SQUARE_FROM: "e5",
+    RESULT: null,
+    RESULT_FEN: "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"
+  }
+];
+
 const MOVES_INVALID = [
   {
     TITLE: "PAWN PASSANT CAPTURE INVALID",
@@ -83,7 +100,7 @@ const MOVES_INVALID = [
 
 describe("Move", function() {
   it("should return piece captured", function() {
-    MOVES.forEach(movement => {
+    [...MOVES, ...MOVES_SAN].forEach(movement => {
       testMove(new Chess(movement.FEN), movement);
     });
   });

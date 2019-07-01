@@ -19,20 +19,24 @@ import {
 } from "./board";
 import { flat, cloneDeep, unique } from "./utils";
 
-function getSquareMovesTurn(state) {
+function moves({ state, withColor, withPieceType }) {
+  const { board, activeColour } = state;
   return flat(
-    squaresActiveColor(state).map(algebraicPosition => {
-      const moves = getSquareMoves({ state, algebraicPosition });
-      return moves.map(move => ({
-        from: algebraicPosition,
-        to: move.square,
-        capture: move.piece
-      }));
-    })
+    squares({ board, withColor: withColor || activeColour, withPieceType }).map(
+      ({ piece, algebraicPosition }) => {
+        const moves = movesPosition({ state, algebraicPosition });
+        return moves.map(move => ({
+          piece,
+          from: algebraicPosition,
+          to: move.square,
+          capture: move.piece
+        }));
+      }
+    )
   );
 }
 
-function getSquareMoves({ state, algebraicPosition }) {
+function movesPosition({ state, algebraicPosition }) {
   const square = squareInBoard({ board: state.board, algebraicPosition });
 
   const pieceValidSquare =
@@ -150,6 +154,42 @@ function isPawnMoveCapture({ square, nextSquare }) {
 }
 
 function moveSquare({
+  state,
+  algebraicPositionFrom,
+  algebraicPositionTo,
+  promotionType
+}) {
+  return !algebraicPositionTo
+    ? moveSquareSAN({ state, positionSAN: algebraicPositionFrom })
+    : moveSquareAlgebraic({
+        state,
+        algebraicPositionFrom,
+        algebraicPositionTo,
+        promotionType
+      });
+}
+
+function moveSquareSAN({ state, positionSAN }) {
+  if (positionSAN.length !== 2) {
+    throw Error("Invalid SAN");
+  }
+
+  const movePawn = moves({ state, withPieceType: "p" }).find(
+    ({ to }) => to === positionSAN
+  );
+
+  if (!movePawn) {
+    throw Error("Invalid SAN");
+  }
+
+  return moveSquareAlgebraic({
+    state,
+    algebraicPositionFrom: movePawn.from,
+    algebraicPositionTo: positionSAN
+  });
+}
+
+function moveSquareAlgebraic({
   state,
   algebraicPositionFrom,
   algebraicPositionTo,
@@ -308,7 +348,7 @@ function moveSquareIsValid({
   algebraicPositionFrom,
   algebraicPositionTo
 }) {
-  const moves = getSquareMoves({
+  const moves = movesPosition({
     state,
     algebraicPosition: algebraicPositionFrom
   });
@@ -333,11 +373,9 @@ function cleanSquareBoard({ board, boardPosition }) {
 
 function isTargetKing(state) {
   const { board, activeColour } = state;
-  const noActiveColour =
-    PIECE_COLOR.WHITE === activeColour ? PIECE_COLOR.BLACK : PIECE_COLOR.WHITE;
   const squareKing = getSquareKing({
     board,
-    color: noActiveColour
+    color: inverseColor(activeColour)
   });
   return isTarget({ state, algebraicPosition: squareKing.square });
 }
@@ -361,35 +399,30 @@ function getSquareKing({ board, color }) {
 }
 
 function isTarget({ state, algebraicPosition }) {
-  return !!getSquareMovesActiveColor(state).find(
-    square => square.square === algebraicPosition
-  );
+  return !!moves({ state }).find(({ to }) => to === algebraicPosition);
 }
 
-function getSquareMovesActiveColor(state) {
-  return unique(
-    flat(
-      squaresActiveColor(state).map(algebraicPosition => {
-        const moves = getSquareMoves({ state, algebraicPosition });
-        return moves;
-      })
-    )
-  );
-}
-
-function squaresActiveColor(state) {
-  const { board, activeColour } = state;
+function squares({ board, withColor = false, withPieceType = false }) {
   return flat(
     board.map((row, rowIndex) =>
       row
         .map((piece, colIndex) => ({
           piece,
-          square: toAlgebraicPosition([rowIndex, colIndex])
+          algebraicPosition: toAlgebraicPosition([rowIndex, colIndex])
         }))
-        .filter(
-          piece => piece.piece !== null && piece.piece.color === activeColour
-        )
-        .map(piece => piece.square)
+        .filter(({ piece }) => {
+          if (!piece) {
+            return false;
+          }
+
+          const colorValid =
+            !withColor || (withColor && piece.color === withColor);
+
+          const typeValid =
+            !withPieceType || (withPieceType && piece.type === withPieceType);
+
+          return colorValid && typeValid;
+        })
     )
   );
 }
@@ -471,11 +504,4 @@ function isKingSquare({ board, algebraicPosition }) {
   return square.piece !== null && square.piece.type === PIECE_TYPE.KING;
 }
 
-export {
-  getSquareMovesTurn,
-  getSquareMoves,
-  moveSquare,
-  isTarget,
-  isTargetKing,
-  castling
-};
+export { moves, movesPosition, moveSquare, isTarget, isTargetKing, castling };

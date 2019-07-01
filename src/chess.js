@@ -1,7 +1,7 @@
 import { fenToState, stateToFen, squareInBoard } from "./board";
 import {
-  getSquareMovesTurn,
-  getSquareMoves,
+  moves,
+  movesPosition,
   moveSquare,
   isTarget,
   isTargetKing,
@@ -23,11 +23,11 @@ class Chess {
   }
 
   getMovesTurn() {
-    return getSquareMovesTurn(this.state);
+    return moves({ state: this.state });
   }
 
   getMoves(algebraicPosition) {
-    return getSquareMoves({
+    return movesPosition({
       state: this.state,
       algebraicPosition
     });
