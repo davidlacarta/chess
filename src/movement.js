@@ -8,6 +8,7 @@ import {
   PAWN_START,
   CASTLING,
   CASTLING_SAFE,
+  CASTLING_TYPE,
   isPawn,
   inverseColor
 } from "./piece";
@@ -17,7 +18,7 @@ import {
   toArrayPosition,
   toAlgebraicPosition
 } from "./board";
-import { flat, cloneDeep, unique } from "./utils";
+import { flat, cloneDeep } from "./utils";
 
 function moves({ state, withColor, withPieceType }) {
   const { board, activeColour } = state;
@@ -160,7 +161,7 @@ function moveSquare({
   promotionType
 }) {
   return !algebraicPositionTo
-    ? moveSquareSAN({ state, positionSAN: algebraicPositionFrom })
+    ? moveSquareSAN({ state, movementSAN: algebraicPositionFrom })
     : moveSquareAlgebraic({
         state,
         algebraicPositionFrom,
@@ -169,24 +170,119 @@ function moveSquare({
       });
 }
 
-function moveSquareSAN({ state, positionSAN }) {
-  if (positionSAN.length !== 2) {
-    throw Error("Invalid SAN");
+function moveSquareSAN({ state, movementSAN }) {
+  const {
+    castlingKing,
+    castlingQueen,
+    from: moveFrom,
+    to: moveTo,
+    pieceType,
+    promotionType
+  } = decode(movementSAN);
+
+  if (castlingKing) {
+    return castling({ state, castlingType: CASTLING_TYPE.KING });
   }
 
-  const movePawn = moves({ state, withPieceType: "p" }).find(
-    ({ to }) => to === positionSAN
+  if (castlingQueen) {
+    return castling({ state, castlingType: CASTLING_TYPE.QUEEN });
+  }
+
+  const potentialMoves = moves({ state, withPieceType: pieceType }).filter(
+    ({ to, from }) => {
+      const [rowFrom, colFrom] = from;
+
+      const validFrom =
+        !moveFrom ||
+        moveFrom === from ||
+        moveFrom === rowFrom ||
+        moveFrom === colFrom;
+
+      const validTo = to === moveTo;
+
+      return validTo && validFrom;
+    }
   );
 
-  if (!movePawn) {
-    throw Error("Invalid SAN");
+  if (potentialMoves.length === 0) {
+    throw `Invalid SAN: ${movementSAN}`;
+  }
+
+  if (potentialMoves.length > 1) {
+    throw `Invalid SAN, amibiguous piece: ${potentialMoves
+      .map(({ from }) => from)
+      .join(",")}`;
   }
 
   return moveSquareAlgebraic({
     state,
-    algebraicPositionFrom: movePawn.from,
-    algebraicPositionTo: positionSAN
+    algebraicPositionFrom: potentialMoves[0].from,
+    algebraicPositionTo: moveTo,
+    promotionType
   });
+}
+
+function decode(movementSAN) {
+  const castlingKing = movementSAN === "0-0" || movementSAN === "O-O";
+  if (castlingKing) {
+    return { castlingKing };
+  }
+
+  const castlingQueen = movementSAN === "0-0-0" || movementSAN === "O-O-O";
+  if (castlingQueen) {
+    return { castlingQueen };
+  }
+
+  const movementClean = sanitize({
+    target: movementSAN,
+    chars: ["x", "e.p.", "+", "=", ":"]
+  });
+
+  const promotionType =
+    isRegularPiece(lastChar(movementClean)) &&
+    lastChar(movementClean).toLowerCase();
+
+  const movementWithoutPromotion = promotionType
+    ? movementClean.slice(0, movementClean.length - 1)
+    : movementClean;
+
+  const [pieceTypeFrom, to] = splitTwoLastChars(movementWithoutPromotion);
+
+  const { from, pieceType } = isRegularPiece(firstChar(pieceTypeFrom))
+    ? {
+        from: pieceTypeFrom.slice(1),
+        pieceType: firstChar(pieceTypeFrom).toLowerCase()
+      }
+    : { from: pieceTypeFrom, pieceType: PIECE_TYPE.PAWN };
+
+  return {
+    castlingKing,
+    castlingQueen,
+    from,
+    to,
+    pieceType,
+    promotionType
+  };
+}
+
+function splitTwoLastChars(chars) {
+  return [chars.slice(0, chars.length - 2), chars.slice(-2)];
+}
+
+function lastChar(chars) {
+  return chars.slice(-1);
+}
+
+function firstChar(chars) {
+  return chars.slice(0, 1);
+}
+
+function isRegularPiece(char) {
+  return /(R|N|B|Q|K)/.test(char);
+}
+
+function sanitize({ target, chars }) {
+  return chars.reduce((acc, char) => acc.replace(char, ""), target);
 }
 
 function moveSquareAlgebraic({
@@ -377,6 +473,11 @@ function isTargetKing(state) {
     board,
     color: inverseColor(activeColour)
   });
+
+  if (!squareKing) {
+    return false;
+  }
+
   return isTarget({ state, algebraicPosition: squareKing.square });
 }
 
@@ -459,6 +560,8 @@ function castling({ state, castlingType }) {
   updateCastling({ state, castlingType });
   updateFullMoveNumber(state);
   changeActiveColor(state);
+
+  return { state };
 }
 
 function checkAvailabilityCastling({ squaresSafes, board }) {

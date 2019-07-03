@@ -140,7 +140,7 @@ function toAlgebraicPosition(arrayPosition) {
   return `${letter}${number}`;
 }
 
-function isOverflow({ board, arrayPosition }) {
+function isOverflow({ arrayPosition }) {
   const [row, col] = arrayPosition;
   return row < 0 || row > 7 || col < 0 || col > 7;
 }
