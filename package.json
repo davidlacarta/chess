@@ -1,6 +1,6 @@
 {
   "name": "chess-base",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "chess board logic",
   "main": "dist/chess.js",
   "module": "src/chess.js",
