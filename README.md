@@ -5,124 +5,104 @@
 
 Chess board logic
 
-Start
-
-```
+```js
 const chess = new Chess();
 ```
 
-Start with fen position
+```js
+const chess = new Chess(
+  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+);
 
-```
-const chess = new Chess("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-```
-
-Fen position
-
-```
-const chess = new Chess();
 chess.toFen();
 
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-```
 
-Get square
-
-```
-const chess = new Chess();
-chess.getSquare();
+chess.getSquare("e2");
 
 // { square: 'e2', piece: { type: 'p', color: 'w' } }
-```
 
-Movements available
-
-```
-const chess = new Chess();
 chess.getMoves("b1");
 
-// [ { square: 'c3', piece: null }, { square: 'a3', piece: null } ]
-```
+// [{ square: "c3", piece: null }, { square: "a3", piece: null }];
 
-Board ascii
-
-```
-const chess = new Chess();
-chess.toAscii();
-
-// ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
-// ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-// . . . . . . . .
-// . . . . . . . .
-// . . . . . . . .
-// . . . . . . . .
-// ♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
-// ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
-```
-
-Move
-
-```
-const chess = new Chess();
 chess.move("e2", "e4");
 chess.toAscii();
 
 // ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
 // ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
-// . . . . . . . .
-// . . . . . . . .
-// . . . . ♙ . . .
-// . . . . . . . .
-// ♙ ♙ ♙ ♙ . ♙ ♙ ♙
+//
+//
+//         ♙
+//
+// ♙ ♙ ♙ ♙   ♙ ♙ ♙
 // ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 ```
 
-Castling
+```js
+const chess = new Chess();
 
-```
-const chess = new Chess("r1bqkbnr/ppp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4");
+chess.move("e4"); // SAN (Standard Algebraic Notation)
 chess.toAscii();
 
-// ♜ . ♝ ♛ ♚ ♝ ♞ ♜
-// ♟ ♟ ♟ . . ♟ ♟ ♟
-// . . ♞ ♟ . . . .
-// . . . . ♟ . . .
-// . . ♗ . . . . .
-// . . . . ♙ ♘ . .
-// ♙ ♙ ♙ ♙ . ♙ ♙ ♙
-// ♖ ♘ ♗ ♕ ♔ . . ♖
+// ♜ ♞ ♝ ♛ ♚ ♝ ♞ ♜
+// ♟ ♟ ♟ ♟ ♟ ♟ ♟ ♟
+//
+//
+//         ♙
+//
+// ♙ ♙ ♙ ♙   ♙ ♙ ♙
+// ♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
+```
+
+```js
+const chess = new Chess(
+  "r1bqkbnr/ppp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4"
+);
+
+chess.toAscii();
+
+// ♜   ♝ ♛ ♚ ♝ ♞ ♜
+// ♟ ♟ ♟     ♟ ♟ ♟
+//     ♞ ♟
+//         ♟
+//     ♗
+//         ♙ ♘
+// ♙ ♙ ♙ ♙   ♙ ♙ ♙
+// ♖ ♘ ♗ ♕ ♔     ♖
 
 chess.castlingKing();
 chess.toAscii();
 
-// ♜ . ♝ ♛ ♚ ♝ ♞ ♜
-// ♟ ♟ ♟ . . ♟ ♟ ♟
-// . . ♞ ♟ . . . .
-// . . . . ♟ . . .
-// . . ♗ . . . . .
-// . . . . ♙ ♘ . .
-// ♙ ♙ ♙ ♙ . ♙ ♙ ♙
-// ♖ ♘ ♗ ♕ . ♖ ♔ .
+// ♜   ♝ ♛ ♚ ♝ ♞ ♜
+// ♟ ♟ ♟     ♟ ♟ ♟
+//     ♞ ♟
+//         ♟
+//     ♗
+//         ♙ ♘
+// ♙ ♙ ♙ ♙   ♙ ♙ ♙
+// ♖ ♘ ♗ ♕   ♖ ♔
 
 chess.castlingQeen();
 
 // throw "castling invalid";
 ```
 
-Target square
+```js
+const chess = new Chess(
+  "r1bqkbnr/ppp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4"
+);
 
-```
-const chess = new Chess("r1bqkbnr/ppp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4");
 chess.toAscii();
 
-// ♜ . ♝ ♛ ♚ ♝ ♞ ♜
-// ♟ ♟ ♟ . . ♟ ♟ ♟
-// . . ♞ ♟ . . . .
-// . . . . ♟ . . .
-// . . ♗ . . . . .
-// . . . . ♙ ♘ . .
-// ♙ ♙ ♙ ♙ . ♙ ♙ ♙
-// ♖ ♘ ♗ ♕ ♔ . . ♖
+// ♜   ♝ ♛ ♚ ♝ ♞ ♜
+// ♟ ♟ ♟     ♟ ♟ ♟
+//     ♞ ♟
+//         ♟
+//     ♗
+//         ♙ ♘
+// ♙ ♙ ♙ ♙   ♙ ♙ ♙
+// ♖ ♘ ♗ ♕ ♔     ♖
 
 chess.target("e1");
 
@@ -135,5 +115,91 @@ chess.target("e5");
 chess.targetKing();
 
 // false
+```
 
+```js
+const chess = new Chess();
+
+chess.getMovesTurn();
+
+// [ { piece: { type: 'n', color: 'w' },
+//     from: 'b1',
+//     to: 'c3',
+//     capture: null },
+//   { piece: { type: 'n', color: 'w' },
+//     from: 'b1',
+//     to: 'a3',
+//     capture: null },
+//   { piece: { type: 'n', color: 'w' },
+//     from: 'g1',
+//     to: 'h3',
+//     capture: null },
+//   { piece: { type: 'n', color: 'w' },
+//     from: 'g1',
+//     to: 'f3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'a2',
+//     to: 'a3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'a2',
+//     to: 'a4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'b2',
+//     to: 'b3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'b2',
+//     to: 'b4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'c2',
+//     to: 'c3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'c2',
+//     to: 'c4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'd2',
+//     to: 'd3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'd2',
+//     to: 'd4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'e2',
+//     to: 'e3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'e2',
+//     to: 'e4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'f2',
+//     to: 'f3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'f2',
+//     to: 'f4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'g2',
+//     to: 'g3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'g2',
+//     to: 'g4',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'h2',
+//     to: 'h3',
+//     capture: null },
+//   { piece: { type: 'p', color: 'w' },
+//     from: 'h2',
+//     to: 'h4',
+//     capture: null } ]
 ```
