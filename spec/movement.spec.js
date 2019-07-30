@@ -92,8 +92,8 @@ const MOVEMENTS = [
 ];
 
 describe("Movements", function() {
-  it("should return availability movements", function() {
-    MOVEMENTS.forEach(movement => {
+  MOVEMENTS.forEach(movement => {
+    it("should return availability movements", function() {
       testGetMoves(new Chess(movement.FEN), movement);
     });
   });

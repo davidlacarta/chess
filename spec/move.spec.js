@@ -187,14 +187,14 @@ const MOVES_INVALID_SAN = [
 ];
 
 describe("Move", function() {
-  it("should perform movement", function() {
-    [...MOVES, ...MOVES_SAN].forEach(movement => {
+  [...MOVES, ...MOVES_SAN].forEach(movement => {
+    it(movement.TITLE, function() {
       testMove(new Chess(movement.FEN), movement);
     });
   });
 
-  it("should throw exception", function() {
-    [...MOVES_INVALID, ...MOVES_INVALID_SAN].forEach(movement => {
+  [...MOVES_INVALID, ...MOVES_INVALID_SAN].forEach(movement => {
+    it(movement.TITLE, function() {
       const chess = new Chess(movement.FEN);
       try {
         chess.move(

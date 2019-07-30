@@ -1,4 +1,4 @@
-const { Chess } = require("../src/chess");
+import { Chess } from "../src/chess";
 
 const CASTLINGS_KING = [
   {
@@ -17,14 +17,14 @@ const CASTLINGS_INVALID = [
 ];
 
 describe("Castling", function() {
-  it("should castling king", function() {
-    CASTLINGS_KING.forEach(movement => {
+  CASTLINGS_KING.forEach(movement => {
+    it("should castling king", function() {
       testCastlingKing(new Chess(movement.FEN), movement);
     });
   });
 
-  it("should throw exception castling target", function() {
-    CASTLINGS_INVALID.forEach(movement => {
+  CASTLINGS_INVALID.forEach(movement => {
+    it("should throw exception castling target", function() {
       const chess = new Chess(movement.FEN);
       expect(() => chess.castlingKing()).toThrow("castling target");
     });
