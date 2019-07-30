@@ -61,15 +61,37 @@ const CASTLING_TYPE = {
   QUEEN: "q"
 };
 
-const CASTLING = {
+const CASTLING_COLUMN_MOVES = {
   k: { king: { from: "e", to: "g" }, rook: { from: "h", to: "f" } },
   q: { king: { from: "e", to: "c" }, rook: { from: "a", to: "d" } }
 };
 
-const CASTLING_SAFE = {
+const CASTLING_COLUMN_SAFE = {
   k: ["e", "f", "g"],
   q: ["b", "c", "d", "e"]
 };
+
+function castlingMoves({ activeColour, castlingType }) {
+  const castlingRow = PIECE_COLOR.WHITE === activeColour ? "1" : "8";
+
+  const {
+    king: { from: kingFrom, to: kingTo },
+    rook: { from: rookFrom, to: rookTo }
+  } = CASTLING_COLUMN_MOVES[castlingType];
+
+  return {
+    king: { from: `${kingFrom}${castlingRow}`, to: `${kingTo}${castlingRow}` },
+    rook: { from: `${rookFrom}${castlingRow}`, to: `${rookTo}${castlingRow}` }
+  };
+}
+
+function castlingSafeSquares({ activeColour, castlingType }) {
+  const castlingRow = PIECE_COLOR.WHITE === activeColour ? "1" : "8";
+
+  return CASTLING_COLUMN_SAFE[castlingType].map(
+    square => `${square}${castlingRow}`
+  );
+}
 
 function isPawn(piece) {
   return piece && piece.type === PIECE_TYPE.PAWN;
@@ -89,9 +111,9 @@ export {
   PAWN_OFFSETS,
   PAWN_PROMOTION,
   PAWN_START,
-  CASTLING,
   CASTLING_TYPE,
-  CASTLING_SAFE,
   isPawn,
-  inverseColor
+  inverseColor,
+  castlingMoves,
+  castlingSafeSquares
 };

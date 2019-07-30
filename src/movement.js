@@ -6,11 +6,11 @@ import {
   PAWN_OFFSETS,
   PAWN_PROMOTION,
   PAWN_START,
-  CASTLING,
-  CASTLING_SAFE,
   CASTLING_TYPE,
   isPawn,
-  inverseColor
+  inverseColor,
+  castlingMoves,
+  castlingSafeSquares
 } from "./piece";
 import {
   squareInBoard,
@@ -188,30 +188,19 @@ function moveSquareSAN({ state, movementSAN }) {
     return castling({ state, castlingType: CASTLING_TYPE.QUEEN });
   }
 
-  const potentialMoves = moves({ state, withPieceType: pieceType }).filter(
-    ({ to, from }) => {
-      const [rowFrom, colFrom] = from;
+  const potentialMoves = getPotentialMoves({
+    state,
+    withPieceType: pieceType,
+    moveFrom,
+    moveTo
+  });
 
-      const validFrom =
-        !moveFrom ||
-        moveFrom === from ||
-        moveFrom === rowFrom ||
-        moveFrom === colFrom;
-
-      const validTo = to === moveTo;
-
-      return validTo && validFrom;
-    }
-  );
-
-  if (potentialMoves.length === 0) {
-    throw `Invalid SAN: ${movementSAN}`;
-  }
-
-  if (potentialMoves.length > 1) {
-    throw `Invalid SAN, amibiguous piece: ${potentialMoves
-      .map(({ from }) => from)
-      .join(",")}`;
+  if (potentialMoves.length !== 1) {
+    throw potentialMoves.length === 0
+      ? `Invalid SAN: ${movementSAN}`
+      : `Invalid SAN, amibiguous piece: ${potentialMoves
+          .map(({ from }) => from)
+          .join(",")}`;
   }
 
   return moveSquareAlgebraic({
@@ -219,6 +208,21 @@ function moveSquareSAN({ state, movementSAN }) {
     algebraicPositionFrom: potentialMoves[0].from,
     algebraicPositionTo: moveTo,
     promotionType
+  });
+}
+
+function getPotentialMoves({ state, withPieceType, moveFrom, moveTo }) {
+  return moves({ state, withPieceType }).filter(({ to, from }) => {
+    const [rowFrom, colFrom] = from;
+
+    const validTo = to === moveTo;
+    const validFrom =
+      !moveFrom ||
+      moveFrom === from ||
+      moveFrom === rowFrom ||
+      moveFrom === colFrom;
+
+    return validTo && validFrom;
   });
 }
 
@@ -529,30 +533,28 @@ function squares({ board, withColor = false, withPieceType = false }) {
 }
 
 function castling({ state, castlingType }) {
+  const { activeColour, board } = state;
+
+  const safeSquares = castlingSafeSquares({ activeColour, castlingType });
+
+  checkAvailabilityCastling({ safeSquares, board });
+
+  checkTargetCastling({ safeSquares, state });
+
   const {
     king: { from: kingFrom, to: kingTo },
     rook: { from: rookFrom, to: rookTo }
-  } = CASTLING[castlingType];
-
-  const { board, activeColour } = state;
-  const castlingRow = PIECE_COLOR.WHITE === activeColour ? "1" : "8";
-  const squaresSafes = CASTLING_SAFE[castlingType].map(square =>
-    square.concat(castlingRow)
-  );
-
-  checkAvailabilityCastling({ squaresSafes, board });
-
-  checkTargetCastling({ squaresSafes, state });
+  } = castlingMoves({ activeColour, castlingType });
 
   moveSquareBoard({
     board,
-    boardPositionFrom: toArrayPosition(kingFrom.concat(castlingRow)),
-    boardPositionTo: toArrayPosition(kingTo.concat(castlingRow))
+    boardPositionFrom: toArrayPosition(kingFrom),
+    boardPositionTo: toArrayPosition(kingTo)
   });
   moveSquareBoard({
     board,
-    boardPositionFrom: toArrayPosition(rookFrom.concat(castlingRow)),
-    boardPositionTo: toArrayPosition(rookTo.concat(castlingRow))
+    boardPositionFrom: toArrayPosition(rookFrom),
+    boardPositionTo: toArrayPosition(rookTo)
   });
 
   state.passantTarget = "-";
@@ -564,26 +566,27 @@ function castling({ state, castlingType }) {
   return { state };
 }
 
-function checkAvailabilityCastling({ squaresSafes, board }) {
-  if (
-    !!squaresSafes.find(
-      algebraicPosition =>
-        !isEmptySquare({ board, algebraicPosition }) &&
-        !isKingSquare({ board, algebraicPosition })
-    )
-  ) {
+function checkAvailabilityCastling({ safeSquares, board }) {
+  const isAnySafeSquareEmptyOrKing = !!safeSquares.find(
+    algebraicPosition =>
+      !isEmptySquare({ board, algebraicPosition }) &&
+      !isKingSquare({ board, algebraicPosition })
+  );
+
+  if (isAnySafeSquareEmptyOrKing) {
     throw "castling invalid";
   }
 }
 
-function checkTargetCastling({ squaresSafes, state }) {
+function checkTargetCastling({ safeSquares, state }) {
   const stateInverseColor = cloneDeep(state);
   stateInverseColor.activeColour = inverseColor(state.activeColour);
-  if (
-    !!squaresSafes.find(squareSafe =>
-      isTarget({ state: stateInverseColor, algebraicPosition: squareSafe })
-    )
-  ) {
+
+  const isAnySafeSquareTarget = !!safeSquares.find(safeSquare =>
+    isTarget({ state: stateInverseColor, algebraicPosition: safeSquare })
+  );
+
+  if (isAnySafeSquareTarget) {
     throw "castling target";
   }
 }
