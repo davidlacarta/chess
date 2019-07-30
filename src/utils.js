@@ -19,4 +19,8 @@ function cloneDeep(object) {
   return JSON.parse(JSON.stringify(object));
 }
 
-export { isEqual, unique, flat, cloneDeep };
+function replace(str, keys, value) {
+  return keys.reduce((accum, current) => accum.replace(current, value), str);
+}
+
+export { isEqual, unique, flat, cloneDeep, replace };

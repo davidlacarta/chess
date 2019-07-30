@@ -18,7 +18,7 @@ import {
   toArrayPosition,
   toAlgebraicPosition
 } from "./board";
-import { flat, cloneDeep } from "./utils";
+import { flat, cloneDeep, replace } from "./utils";
 
 function moves({ state, withColor, withPieceType }) {
   const { board, activeColour } = state;
@@ -436,6 +436,7 @@ function moveSquareVirtual({
   });
   updateHalfMoveClock({ state, squareFrom, squareTarget });
   updateFullMoveNumber(state);
+  updateCastling({ state, algebraicPositionFrom });
   changeActiveColor(state);
 
   return squareTarget;
@@ -615,7 +616,7 @@ function castling({ state, castlingType }) {
 
   state.passantTarget = "-";
   state.halfMoveClock += 1;
-  updateCastling({ state, castlingType });
+  updateCastling({ state });
   updateFullMoveNumber(state);
   changeActiveColor(state);
 
@@ -647,13 +648,69 @@ function checkTargetCastling({ safeSquares, state }) {
   }
 }
 
-function updateCastling({ state, castlingType }) {
-  const castlingKey =
+function updateCastling({ state, algebraicPositionFrom }) {
+  const keysReplace = keysReplaceCastling({ state, algebraicPositionFrom });
+
+  const keysReplaceColour =
     state.activeColour === PIECE_COLOR.WHITE
-      ? castlingType.toUpperCase()
-      : castlingType;
-  const castlingNew = state.castlingAvailability.replace(castlingKey, "");
-  state.castlingAvailability = castlingNew || "-";
+      ? keysReplace.map(key => key.toUpperCase())
+      : keysReplace;
+
+  const castlingRest = replace(
+    state.castlingAvailability,
+    keysReplaceColour,
+    ""
+  );
+
+  state.castlingAvailability = castlingRest || "-";
+}
+
+function keysReplaceCastling({ state, algebraicPositionFrom }) {
+  if (!algebraicPositionFrom) {
+    return [PIECE_TYPE.KING, PIECE_TYPE.QUEEN];
+  }
+
+  const {
+    kingFrom,
+    rookFromSideKing,
+    rookFromSideQueen
+  } = castlingPositionsFrom(state.activeColour);
+
+  const isMoveKing = algebraicPositionFrom === kingFrom;
+  if (isMoveKing) {
+    return [PIECE_TYPE.KING, PIECE_TYPE.QUEEN];
+  }
+
+  const isMoveSideKing = algebraicPositionFrom === rookFromSideKing;
+  if (isMoveSideKing) {
+    return [PIECE_TYPE.KING];
+  }
+
+  const isMoveSideQueen = algebraicPositionFrom === rookFromSideQueen;
+  if (isMoveSideQueen) {
+    return [PIECE_TYPE.QUEEN];
+  }
+
+  return [];
+}
+
+function castlingPositionsFrom(activeColour) {
+  const {
+    king: { from: kingFrom },
+    rook: { from: rookFromSideKing }
+  } = castlingMoves({
+    activeColour: activeColour,
+    castlingType: CASTLING_TYPE.KING
+  });
+
+  const {
+    rook: { from: rookFromSideQueen }
+  } = castlingMoves({
+    activeColour: activeColour,
+    castlingType: CASTLING_TYPE.QUEEN
+  });
+
+  return { kingFrom, rookFromSideKing, rookFromSideQueen };
 }
 
 function isEmptySquare({ board, algebraicPosition }) {

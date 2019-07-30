@@ -5,7 +5,7 @@ const CASTLINGS_KING = [
     TITLE: "KING CASTLING VALID",
     FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
     RESULT_FEN:
-      "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b Qkq - 3 4"
+      "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b kq - 3 4"
   }
 ];
 

@@ -104,7 +104,7 @@ const MOVES_SAN = [
     FEN: "3r3r/b7/3b4/R7/4Q2Q/8/8/R6Q w KQkq - 0 1",
     SQUARE_FROM: "R1a3",
     RESULT: null,
-    RESULT_FEN: "3r3r/b7/3b4/R7/4Q2Q/R7/8/7Q b KQkq - 1 1"
+    RESULT_FEN: "3r3r/b7/3b4/R7/4Q2Q/R7/8/7Q b Kkq - 1 1"
   },
   {
     TITLE: "MOVE QUEEN WHITE AMBIGUOUS COLUMN h ROW 1",
@@ -118,14 +118,14 @@ const MOVES_SAN = [
     FEN: "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQK2R w KQkq - 2 4",
     SQUARE_FROM: "O-O",
     RESULT_FEN:
-      "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b Qkq - 3 4"
+      "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b kq - 3 4"
   },
   {
     TITLE: "KING CASTLING VALID HALF",
     FEN: "rnbq1rk1/p3bpp1/1p2pn1p/2ppN3/3P3B/2N1P3/PPP1BPPP/R2QK2R w KQ c6 0 9",
     SQUARE_FROM: "e1g1",
     RESULT_FEN:
-      "rnbq1rk1/p3bpp1/1p2pn1p/2ppN3/3P3B/2N1P3/PPP1BPPP/R2Q1RK1 b Q - 1 9"
+      "rnbq1rk1/p3bpp1/1p2pn1p/2ppN3/3P3B/2N1P3/PPP1BPPP/R2Q1RK1 b - - 1 9"
   },
   {
     TITLE: "PAWN PASSANT CAPTURE",
