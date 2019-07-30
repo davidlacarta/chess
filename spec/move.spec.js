@@ -121,6 +121,13 @@ const MOVES_SAN = [
       "r1bqkbnr/pPp2ppp/2np4/4p3/2B5/4PN2/PPPP1PPP/RNBQ1RK1 b Qkq - 3 4"
   },
   {
+    TITLE: "KING CASTLING VALID HALF",
+    FEN: "rnbq1rk1/p3bpp1/1p2pn1p/2ppN3/3P3B/2N1P3/PPP1BPPP/R2QK2R w KQ c6 0 9",
+    SQUARE_FROM: "e1g1",
+    RESULT_FEN:
+      "rnbq1rk1/p3bpp1/1p2pn1p/2ppN3/3P3B/2N1P3/PPP1BPPP/R2Q1RK1 b Q - 1 9"
+  },
+  {
     TITLE: "PAWN PASSANT CAPTURE",
     FEN: "rnbqkbnr/ppp2ppp/8/2Ppp3/3QP3/8/PP3PPP/RNB1KBNR w KQkq d6 0 1",
     SQUARE_FROM: "cxd6",
@@ -180,7 +187,7 @@ const MOVES_INVALID_SAN = [
 ];
 
 describe("Move", function() {
-  it("should return piece captured", function() {
+  it("should perform movement", function() {
     [...MOVES, ...MOVES_SAN].forEach(movement => {
       testMove(new Chess(movement.FEN), movement);
     });

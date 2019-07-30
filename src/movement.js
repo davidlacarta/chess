@@ -178,7 +178,7 @@ function moveSquareSAN({ state, movementSAN }) {
     to: moveTo,
     pieceType,
     promotionType
-  } = decode(movementSAN);
+  } = decode({ state, movementSAN });
 
   if (castlingKing) {
     return castling({ state, castlingType: CASTLING_TYPE.KING });
@@ -226,17 +226,41 @@ function getPotentialMoves({ state, withPieceType, moveFrom, moveTo }) {
   });
 }
 
-function decode(movementSAN) {
+function decode({ state, movementSAN }) {
   const castlingKing = movementSAN === "0-0" || movementSAN === "O-O";
-  if (castlingKing) {
-    return { castlingKing };
-  }
-
   const castlingQueen = movementSAN === "0-0-0" || movementSAN === "O-O-O";
-  if (castlingQueen) {
-    return { castlingQueen };
+
+  if (castlingKing || castlingQueen) {
+    return { castlingKing, castlingQueen };
   }
 
+  const { promotionType, movementWithoutPromotion } = decodePromotionType(
+    movementSAN
+  );
+
+  const { from, to, pieceType } = decodeMove(movementWithoutPromotion);
+
+  const { halfCastlingKing, halfCastlingQueen } = decodeHalfCastling({
+    state,
+    from,
+    to
+  });
+
+  if (halfCastlingKing || halfCastlingQueen) {
+    return { castlingKing: halfCastlingKing, castlingQueen: halfCastlingQueen };
+  }
+
+  return {
+    castlingKing,
+    castlingQueen,
+    from,
+    to,
+    pieceType,
+    promotionType
+  };
+}
+
+function decodePromotionType(movementSAN) {
   const movementClean = sanitize({
     target: movementSAN,
     chars: ["x", "e.p.", "+", "=", ":"]
@@ -250,6 +274,13 @@ function decode(movementSAN) {
     ? movementClean.slice(0, movementClean.length - 1)
     : movementClean;
 
+  return {
+    promotionType,
+    movementWithoutPromotion
+  };
+}
+
+function decodeMove(movementWithoutPromotion) {
   const [pieceTypeFrom, to] = splitTwoLastChars(movementWithoutPromotion);
 
   const { from, pieceType } = isRegularPiece(firstChar(pieceTypeFrom))
@@ -259,14 +290,39 @@ function decode(movementSAN) {
       }
     : { from: pieceTypeFrom, pieceType: PIECE_TYPE.PAWN };
 
+  return { from, to, pieceType };
+}
+
+function decodeHalfCastling({ state, from, to }) {
+  const { activeColour, board } = state;
+  const square = squareInBoard({ board, algebraicPosition: from });
+
+  if (!square || !square.piece || square.piece.type !== PIECE_TYPE.KING) {
+    return { halfCastlingKing: false, halfCastlingQueen: false };
+  }
+
   return {
-    castlingKing,
-    castlingQueen,
-    from,
-    to,
-    pieceType,
-    promotionType
+    halfCastlingKing: decodeHalfCastlingType({
+      activeColour,
+      castlingType: CASTLING_TYPE.KING,
+      from,
+      to
+    }),
+    halfCastlingQueen: decodeHalfCastlingType({
+      activeColour,
+      castlingType: CASTLING_TYPE.QUEEN,
+      from,
+      to
+    })
   };
+}
+
+function decodeHalfCastlingType({ activeColour, castlingType, from, to }) {
+  const {
+    king: { from: kingFrom, to: kingTo }
+  } = castlingMoves({ activeColour, castlingType });
+
+  return kingFrom === from && kingTo === to;
 }
 
 function splitTwoLastChars(chars) {
