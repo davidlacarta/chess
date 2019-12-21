@@ -68,7 +68,7 @@ const CASTLING_COLUMN_MOVES = {
 
 const CASTLING_COLUMN_SAFE = {
   k: ["e", "f", "g"],
-  q: ["b", "c", "d", "e"]
+  q: ["c", "d", "e"]
 };
 
 function castlingMoves({ activeColour, castlingType }) {
