@@ -83,7 +83,7 @@ chess.toAscii();
 // ♙ ♙ ♙ ♙   ♙ ♙ ♙
 // ♖ ♘ ♗ ♕   ♖ ♔
 
-chess.castlingQeen();
+chess.castlingQueen();
 
 // throw "castling invalid";
 ```
